@@ -1,0 +1,565 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Clock, MapPin, ChevronRight, Bell, AlertTriangle, Star } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { stations, arrivals, announcements } from '../lib/data';
+import { cn, getName } from '../lib/utils';
+import { useLanguage } from '../contexts/LanguageContext';
+import { 
+  getNextBarraArrivals, 
+  getNextOceanArrivals, 
+  getNextJockeyClubArrivals, 
+  getNextStadiumArrivals, 
+  getNextPaiKokArrivals, 
+  getNextCotaiOesteArrivals,
+  getNextLotusArrivals,
+  getNextHospitalArrivals,
+  getNextEastAsianGamesArrivals,
+  getNextCotaiLesteArrivals,
+  getNextMustArrivals,
+  getNextAirportArrivals,
+  getNextTaipaFerryArrivals,
+  getNextHospitalSPVArrivals,
+  getNextSeacPaiVanArrivals,
+  getNextLotusHengqinArrivals,
+  getNextHengqinArrivals
+} from '../lib/timetable';
+
+const Home = () => {
+  const { t, language } = useLanguage();
+  const [reminders, setReminders] = useState({});
+  const [barraTimes, setBarraTimes] = useState([]);
+  const [notifyScheduledFor, setNotifyScheduledFor] = useState(null);
+  const notifyRef = useRef(null);
+  const [currentStation, setCurrentStation] = useState(stations[0]);
+  const [noNearby, setNoNearby] = useState(false);
+  const [manualLine, setManualLine] = useState('Taipa Line');
+  const imminentRef = useRef({});
+  const LINES = {
+    'Taipa Line': ['Barra','Ocean','Jockey Club','Stadium','Pai Kok','Cotai West','Lotus','Union Hospital','East Asian Games','Cotai East','MUST','Airport','Taipa Ferry Terminal'],
+    'Seac Pai Van Line': ['Union Hospital','Seac Pai Van'],
+    'Hengqin Line': ['Lotus','Hengqin']
+  };
+  const [manualStation, setManualStation] = useState('Barra');
+  const LINE_LABEL_ZH = {
+    'Taipa Line': '氹仔線',
+    'Seac Pai Van Line': '石排灣線',
+    'Hengqin Line': '橫琴線'
+  };
+
+  const [userLocation, setUserLocation] = useState(null);
+  const [locAccuracy, setLocAccuracy] = useState(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const markerRef = useRef(null);
+  const circleRef = useRef(null);
+  
+  const toRad = d => (d * Math.PI) / 180;
+  const haversine = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // km
+  };
+
+  const initMap = (lat, lon, accuracy) => {
+    if (window.AMap && mapRef.current && !mapInstance.current) {
+      mapInstance.current = new window.AMap.Map(mapRef.current, {
+        center: [lon, lat],
+        zoom: 15,
+        resizeEnable: true,
+        viewMode: '3D',
+        pitch: 45
+      });
+
+      markerRef.current = new window.AMap.Marker({
+        position: [lon, lat],
+        map: mapInstance.current,
+        title: language === 'zh' ? '您的位置' : 'Your Location'
+      });
+
+      if (accuracy) {
+        circleRef.current = new window.AMap.Circle({
+          center: [lon, lat],
+          radius: accuracy, // meters
+          strokeColor: "#38bdf8",
+          strokeOpacity: 0.5,
+          strokeWeight: 2,
+          fillColor: "#38bdf8",
+          fillOpacity: 0.15,
+          map: mapInstance.current
+        });
+      }
+    } else if (mapInstance.current) {
+      mapInstance.current.setCenter([lon, lat]);
+      if (markerRef.current) {
+        markerRef.current.setPosition([lon, lat]);
+      }
+      if (accuracy) {
+        if (circleRef.current) {
+          circleRef.current.setCenter([lon, lat]);
+          circleRef.current.setRadius(accuracy);
+        } else {
+          circleRef.current = new window.AMap.Circle({
+            center: [lon, lat],
+            radius: accuracy,
+            strokeColor: "#38bdf8",
+            strokeOpacity: 0.5,
+            strokeWeight: 2,
+            fillColor: "#38bdf8",
+            fillOpacity: 0.15,
+            map: mapInstance.current
+          });
+        }
+      }
+    }
+  };
+
+  const handleLocationSuccess = (lat, lon, accuracy) => {
+    setUserLocation({ lat, lon });
+    setLocAccuracy(accuracy);
+    setIsLocating(false);
+    initMap(lat, lon, accuracy);
+    
+    let nearest = null;
+    let best = Infinity;
+    for (const s of stations) {
+      if (!s.coords) continue;
+      const d = haversine(lat, lon, s.coords.lat, s.coords.lon);
+      if (d < best) { best = d; nearest = s; }
+    }
+    // Sensitivity set to 500m (0.5km)
+    if (nearest && best <= 0.5) {
+      setCurrentStation(nearest);
+      setNoNearby(false);
+    } else {
+      setCurrentStation(stations[0]); // Barra
+      setNoNearby(true);
+    }
+  };
+
+  const requestGeolocation = () => {
+    setIsLocating(true);
+    if (window.AMap) {
+      window.AMap.plugin('AMap.Geolocation', function() {
+        const geolocation = new window.AMap.Geolocation({
+          enableHighAccuracy: true,
+          timeout: 10000,
+          buttonPosition: 'RB',
+          zoomToAccuracy: true,
+          showButton: false // We use our own button
+        });
+        
+        geolocation.getCurrentPosition(function(status, result) {
+          if (status === 'complete') {
+            handleLocationSuccess(result.position.lat, result.position.lng, result.accuracy);
+          } else {
+            // Fallback to native geolocation if AMap fails
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                pos => handleLocationSuccess(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
+                () => { 
+                  setIsLocating(false);
+                  setCurrentStation(stations[0]); 
+                  setNoNearby(true);
+                  initMap(22.180788, 113.534531); 
+                },
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+              );
+            } else {
+              setIsLocating(false);
+            }
+          }
+        });
+      });
+    } else if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => handleLocationSuccess(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
+        () => { setIsLocating(false); setCurrentStation(stations[0]); setNoNearby(true); },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      );
+    } else {
+      setIsLocating(false);
+      setCurrentStation(stations[0]);
+      setNoNearby(true);
+    }
+  };
+
+  useEffect(() => {
+    const updateTimes = () => {
+      const times = getNextBarraArrivals(2);
+      setBarraTimes(times);
+    };
+    
+    updateTimes();
+    const interval = setInterval(updateTimes, 60000);
+
+    requestGeolocation();
+
+    return () => {
+      clearInterval(interval);
+      if (mapInstance.current) {
+        mapInstance.current.destroy();
+        mapInstance.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const s = stations.find(s => s.name.en === manualStation);
+    if (s) {
+      setCurrentStation(s);
+      setNoNearby(false);
+    }
+  }, [manualStation]);
+
+  useEffect(() => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      try { Notification.requestPermission(); } catch {}
+    }
+  }, []);
+
+  const toggleReminder = (id) => {
+    setReminders(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const nearbyStation = currentStation;
+  // Use real-time data for Barra, otherwise show mock times for selected station
+  const getArrivals = () => {
+    if (nearbyStation.id === '1') {
+      const times = getNextBarraArrivals(2);
+      if (!times) return [{ stationId: '1', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' }];
+      return [{ stationId: '1', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times, status: '' }];
+    }
+    if (nearbyStation.id === '2') {
+      const toTaipa = getNextOceanArrivals('Taipa', 1);
+      const toBarra = getNextOceanArrivals('Barra', 1);
+      const res = [];
+      if (toTaipa) res.push({ stationId: '2', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '2', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '2', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '2', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      return res;
+    }
+    if (nearbyStation.id === '3') {
+      const toTaipa = getNextJockeyClubArrivals('Taipa', 1);
+      const toBarra = getNextJockeyClubArrivals('Barra', 1);
+      const res = [];
+      if (toTaipa) res.push({ stationId: '3', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '3', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '3', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '3', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      return res;
+    }
+    if (nearbyStation.id === '4') {
+      const toTaipa = getNextStadiumArrivals('Taipa', 1);
+      const toBarra = getNextStadiumArrivals('Barra', 1);
+      const res = [];
+      if (toTaipa) res.push({ stationId: '4', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '4', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '4', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '4', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      return res;
+    }
+    if (nearbyStation.id === '5') {
+      const toTaipa = getNextPaiKokArrivals('Taipa', 1);
+      const toBarra = getNextPaiKokArrivals('Barra', 1);
+      const res = [];
+      if (toTaipa) res.push({ stationId: '5', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '5', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '5', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '5', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      return res;
+    }
+    if (nearbyStation.id === '6') {
+      const toTaipa = getNextCotaiOesteArrivals('Taipa', 1);
+      const toBarra = getNextCotaiOesteArrivals('Barra', 1);
+      const res = [];
+      if (toTaipa) res.push({ stationId: '6', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '6', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '6', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '6', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      return res;
+    }
+    if (nearbyStation.id === '7') {
+      const toTaipa = getNextLotusArrivals('Taipa', 1);
+      const toBarra = getNextLotusArrivals('Barra', 1);
+      const toHengqin = getNextLotusHengqinArrivals(1);
+      const res = [];
+      
+      // Taipa Line Platforms
+      if (toTaipa) res.push({ stationId: '7', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（氹仔線1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '7', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（氹仔線1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '7', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（氹仔線2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '7', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（氹仔線2號月台）' }, times: [], status: 'Out of Service' });
+
+      // Hengqin Line Platform
+      if (toHengqin) res.push({ stationId: '7', direction: { en: 'Hengqin (Hengqin Line P3)', zh: '橫琴（橫琴線3號月台）' }, times: toHengqin, status: '' });
+      else res.push({ stationId: '7', direction: { en: 'Hengqin (Hengqin Line P3)', zh: '橫琴（橫琴線3號月台）' }, times: [], status: 'Out of Service' });
+      
+      return res;
+    }
+    if (nearbyStation.id === '8') {
+      const toTaipa = getNextHospitalArrivals('Taipa', 1);
+      const toBarra = getNextHospitalArrivals('Barra', 1);
+      const toSPV = getNextHospitalSPVArrivals(1);
+      const res = [];
+      
+      // Taipa Line Platforms
+      if (toTaipa) res.push({ stationId: '8', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（氹仔線1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '8', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（氹仔線1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '8', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（氹仔線2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '8', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+
+      // Seac Pai Van Line Platform
+      if (toSPV) res.push({ stationId: '8', direction: { en: 'Seac Pai Van (SPV Line P3/4)', zh: '石排灣（石排灣線3/4號月台）' }, times: toSPV, status: '' });
+      else res.push({ stationId: '8', direction: { en: 'Seac Pai Van (SPV Line P3/4)', zh: '石排灣（石排灣線3/4號月台）' }, times: [], status: 'Out of Service' });
+      
+      return res;
+    }
+    if (nearbyStation.id === '9') {
+      const toTaipa = getNextEastAsianGamesArrivals('Taipa', 1);
+      const toBarra = getNextEastAsianGamesArrivals('Barra', 1);
+      const res = [];
+      if (toTaipa) res.push({ stationId: '9', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '9', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '9', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '9', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      return res;
+    }
+    if (nearbyStation.id === '10') {
+      const toTaipa = getNextCotaiLesteArrivals('Taipa', 1);
+      const toBarra = getNextCotaiLesteArrivals('Barra', 1);
+      const res = [];
+      if (toTaipa) res.push({ stationId: '10', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '10', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '10', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '10', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      return res;
+    }
+    if (nearbyStation.id === '11') {
+      const toTaipa = getNextMustArrivals('Taipa', 1);
+      const toBarra = getNextMustArrivals('Barra', 1);
+      const res = [];
+      if (toTaipa) res.push({ stationId: '11', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '11', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '11', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '11', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      return res;
+    }
+    if (nearbyStation.id === '12') {
+      const toTaipa = getNextAirportArrivals('Taipa', 1);
+      const toBarra = getNextAirportArrivals('Barra', 1);
+      const res = [];
+      if (toTaipa) res.push({ stationId: '12', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+      else res.push({ stationId: '12', direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+      
+      if (toBarra) res.push({ stationId: '12', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+      else res.push({ stationId: '12', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      return res;
+    }
+    if (nearbyStation.id === '13') {
+      const times = getNextTaipaFerryArrivals(2);
+      if (!times) return [{ stationId: '13', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' }];
+      return [{ stationId: '13', direction: { en: 'Barra (Platform 2)', zh: '媽閣（2號月台）' }, times, status: '' }];
+    }
+    if (nearbyStation.id === '14') {
+      const times = getNextSeacPaiVanArrivals(2);
+      if (!times) return [{ stationId: '14', direction: { en: 'Union Hospital (Platform 1/2)', zh: '協和醫院（1/2號月台）' }, times: [], status: 'Out of Service' }];
+      return [{ stationId: '14', direction: { en: 'Union Hospital (Platform 1/2)', zh: '協和醫院（1/2號月台）' }, times, status: '' }];
+    }
+    if (nearbyStation.id === '15') {
+      const times = getNextHengqinArrivals(2);
+      if (!times) return [{ stationId: '15', direction: { en: 'Lotus (Platform 1)', zh: '蓮花（1號月台）' }, times: [], status: 'Out of Service' }];
+      return [{ stationId: '15', direction: { en: 'Lotus (Platform 1)', zh: '蓮花（1號月台）' }, times, status: '' }];
+    }
+    const mockTimes = [3, 9];
+    return mockTimes.map((m) => ({
+      stationId: nearbyStation.id,
+      direction: { en: 'Taipa Ferry Terminal (Platform 1)', zh: '氹仔碼頭（1號月台）' },
+      times: [m],
+      status: ''
+    }));
+  };
+
+  const currentArrivals = getArrivals();
+
+  useEffect(() => {
+    const arrs = currentArrivals || [];
+    arrs.forEach((a, idx) => {
+      const mins = Array.isArray(a.times) ? a.times[0] : null;
+      if (mins == null) return;
+      if (mins <= 1 && mins >= 0) {
+        const key = `${nearbyStation.id}-${idx}-${mins}`;
+        if (!imminentRef.current[key]) {
+          imminentRef.current[key] = true;
+          const title = language === 'zh' ? '列車即將到站' : 'Train arriving soon';
+          const bodyZh = `${getName(nearbyStation.name, language)} 往 ${getName(a.direction, language)} 列車即將到站`;
+          const bodyEn = `Train to ${getName(a.direction, language)} arriving soon at ${getName(nearbyStation.name, language)}`;
+          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            try { new Notification(title, { body: language==='zh' ? bodyZh : bodyEn, tag: 'arrival-imminent' }); } catch {}
+          }
+          alert(language==='zh' ? bodyZh : bodyEn);
+        }
+      }
+    });
+  }, [currentArrivals, nearbyStation, language]);
+
+  return (
+    <div className="pb-6 space-y-6">
+      {/* Header */}
+      <div className="bg-blue-600 p-6 pt-10 text-white rounded-b-[32px] shadow-lg">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">{t('app_name')}</h1>
+            <p className="text-blue-100 text-sm mt-1">{t('welcome_message')}</p>
+          </div>
+          <div className="bg-blue-500/30 p-2 rounded-full backdrop-blur-sm">
+             <Bell className="w-5 h-5" />
+          </div>
+        </div>
+        
+        {/* Nearby Station Card */}
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+          <div className="flex items-center text-blue-50 mb-3">
+            <MapPin className="w-4 h-4 mr-2" />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{getName(nearbyStation.name, language)}</span>
+            </div>
+          </div>
+          
+          {/* Embedded Map Container */}
+          <div className="w-full h-48 rounded-xl overflow-hidden mb-4 relative bg-slate-200 shadow-inner group">
+            <div ref={mapRef} className="w-full h-full" id="amap-container"></div>
+            
+            {/* Manual Locate Button */}
+            <Button 
+              size="icon"
+              className={cn(
+                "absolute bottom-3 right-3 rounded-full shadow-lg transition-all z-10",
+                isLocating ? "bg-blue-100 text-blue-600 animate-pulse" : "bg-white text-slate-700 hover:bg-blue-50"
+              )}
+              onClick={requestGeolocation}
+              disabled={isLocating}
+            >
+              <MapPin className={cn("w-5 h-5", isLocating && "animate-bounce")} />
+            </Button>
+
+            {/* Accuracy Indicator Overlay */}
+            {locAccuracy && (
+              <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] text-white pointer-events-none z-10 border border-white/10">
+                {language === 'zh' ? '定位精度' : 'Accuracy'}: ±{Math.round(locAccuracy)}m
+              </div>
+            )}
+
+            {(isLocating || (!userLocation && !noNearby)) && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-100/30 backdrop-blur-[1px]">
+                <div className="bg-white/90 p-3 rounded-2xl shadow-xl flex items-center space-x-3">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                  <span className="text-xs font-medium text-slate-600">
+                    {language === 'zh' ? '正在進行定位...' : 'Locating...'}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {noNearby && (
+            <div className="mb-3 text-xs text-yellow-100 bg-yellow-500/20 border border-yellow-300/40 rounded p-2">
+              {language === 'zh' ? '附近 500m 內沒有輕軌站，已預設為媽閣站' : 'No LRT station within 500m, defaulted to Barra'}
+            </div>
+          )}
+          <div className="space-y-3">
+            {currentArrivals.map((arrival, idx) => (
+              <div key={idx} className="flex items-center justify-between bg-white text-slate-800 p-3 rounded-xl shadow-sm">
+                <div className="flex items-center space-x-3">
+                  <div className={cn("w-2 h-8 rounded-full", arrival.status === 'Out of Service' ? "bg-slate-300" : "bg-blue-500")}></div>
+                  <div>
+                    <p className="font-bold text-sm">{getName(arrival.direction, language)}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                   <div className="text-right">
+                    {arrival.status === 'Out of Service' ? (
+                      <span className="text-sm font-bold text-slate-400">
+                        {language === 'zh' ? '非營運時間' : 'Out of Service'}
+                      </span>
+                    ) : (
+                      <>
+                        <span className="text-xl font-bold text-blue-600">{arrival.times[0]}</span>
+                        <span className="text-xs text-gray-500 ml-1">{t('home_min')}</span>
+                      </>
+                    )}
+                  </div>
+                  {arrival.status !== 'Out of Service' && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={cn("h-8 w-8 rounded-full", reminders[`${arrival.stationId}-${idx}`] ? "text-blue-600 bg-blue-50" : "text-gray-300")}
+                      onClick={() => {
+                        toggleReminder(`${arrival.stationId}-${idx}`);
+                        if (!reminders[`${arrival.stationId}-${idx}`]) {
+                          alert(`${t('reminder_title')}: ${getName(nearbyStation.name, language)} ${t('home_to')} ${getName(arrival.direction, language)} - ${arrival.times[0]} ${t('home_min')}`);
+                        }
+                      }}
+                    >
+                      <Bell className="w-4 h-4" fill={reminders[`${arrival.stationId}-${idx}`] ? "currentColor" : "none"} />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Manual station selection */}
+      <div className="px-6 pb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+          <h2 className="text-lg font-bold text-slate-800 mb-3">{language==='zh'?'選擇車站':'Select Station'}</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-slate-500 mb-1 block">{language==='zh'?'選擇路線':'Select Line'}</label>
+              <select value={manualLine} onChange={(e)=>{ setManualLine(e.target.value); setManualStation(LINES[e.target.value][0]); }} className="w-full h-11 rounded-xl border border-slate-200 px-3 bg-slate-50">
+                {Object.keys(LINES).map(line => (<option key={line} value={line}>{LINE_LABEL_ZH[line] || line}</option>))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 mb-1 block">{language==='zh'?'選擇車站':'Select Station'}</label>
+              <select value={manualStation} onChange={(e)=> setManualStation(e.target.value)} className="w-full h-11 rounded-xl border border-slate-200 px-3 bg-slate-50">
+                {LINES[manualLine].map(n => {
+                  const alias = { 'Taipa Ferry': 'Taipa Ferry Terminal' };
+                  const target = alias[n] || n;
+                  const sObj = stations.find(s => s.name.en === target || s.name.zh === target);
+                  const label = sObj ? getName(sObj.name, language) : (language==='zh'? n : n);
+                  return (<option key={n} value={n}>{label}</option>);
+                })}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Home;
