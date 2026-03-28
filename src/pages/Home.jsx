@@ -26,7 +26,7 @@ import {
 } from '../lib/timetable';
 
 const Home = () => {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const [reminders, setReminders] = useState({});
   const [barraTimes, setBarraTimes] = useState([]);
   const [notifyScheduledFor, setNotifyScheduledFor] = useState(null);
@@ -429,12 +429,33 @@ const Home = () => {
       {/* Header */}
       <div className="bg-blue-600 p-6 pt-10 text-white rounded-b-[32px] shadow-lg">
         <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">{t('app_name')}</h1>
-            <p className="text-blue-100 text-sm mt-1">{t('welcome_message')}</p>
-          </div>
-          <div className="bg-blue-500/30 p-2 rounded-full backdrop-blur-sm">
-             <Bell className="w-5 h-5" />
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold">{t('app_name')}</h1>
+                <p className="text-blue-100 text-sm mt-1">{t('welcome_message')}</p>
+              </div>
+              <div className="flex bg-blue-500/30 p-1 rounded-xl backdrop-blur-sm border border-white/10">
+                <button 
+                  onClick={() => setLanguage('zh')}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                    language === 'zh' ? "bg-white text-blue-600 shadow-sm" : "text-blue-100 hover:text-white"
+                  )}
+                >
+                  繁
+                </button>
+                <button 
+                  onClick={() => setLanguage('en')}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                    language === 'en' ? "bg-white text-blue-600 shadow-sm" : "text-blue-100 hover:text-white"
+                  )}
+                >
+                  EN
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -485,7 +506,7 @@ const Home = () => {
 
           {noNearby && (
             <div className="mb-3 text-xs text-yellow-100 bg-yellow-500/20 border border-yellow-300/40 rounded p-2">
-              {language === 'zh' ? '附近 500m 內沒有輕軌站，已預設為媽閣站' : 'No LRT station within 500m, defaulted to Barra'}
+              {language === 'zh' ? '附近沒有輕軌站，已預設為媽閣站' : 'No LRT station near you, set default to Barra Station'}
             </div>
           )}
           <div className="space-y-3">

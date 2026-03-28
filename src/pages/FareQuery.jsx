@@ -22,11 +22,26 @@ const FareQuery = () => {
   };
 
   const rules = [
-    '長者/殘疾人士電子卡：全程免費',
-    '殘疾人士/長者個人澳門通卡：等同於長者/和殘疾人士電子卡',
-    '一般澳門通卡：享一般輕軌通之優惠',
-    '學生個人澳門通卡：等同於學生電子預付卡',
-    '身高一米以下的小童無需購票，但須由一名成人隨行'
+    { 
+      zh: '長者/殘疾人士電子卡：全程免費', 
+      en: 'Elderly/Disabled Electronic Card: Free of charge for the entire journey' 
+    },
+    { 
+      zh: '殘疾人士/長者個人澳門通卡：等同於長者/和殘疾人士電子卡', 
+      en: 'Personalized Macau Pass for Disabled/Elderly: Equivalent to Elderly/Disabled Electronic Card' 
+    },
+    { 
+      zh: '一般澳門通卡：享一般輕軌通之優惠', 
+      en: 'General Macau Pass: Enjoys the same discounts as the general LRT Card' 
+    },
+    { 
+      zh: '學生個人澳門通卡：等同於學生電子預付卡', 
+      en: 'Personalized Macau Pass for Students: Equivalent to Student Electronic Prepaid Card' 
+    },
+    { 
+      zh: '身高一米以下的小童無需購票，但須由一名成人隨行', 
+      en: 'Children under one meter in height do not need a ticket but must be accompanied by an adult' 
+    }
   ];
 
   return (
@@ -43,17 +58,17 @@ const FareQuery = () => {
           <TabsContent value="query" className="mt-6 space-y-6">
              <div className="space-y-3">
                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">{language==='zh'?'票種':'Fare Type'}</label>
-               <div className="grid grid-cols-2 gap-3">
+               <div className="grid grid-cols-1 gap-3">
                  {[
                    { id:'single', label: language==='zh'?'一般單程票':'Single Ticket' },
-                   { id:'stored', label: language==='zh'?'一般電子預付卡 或 銷售版澳門通卡 或 特惠單程票':'Stored Value / Macau Pass / Single Ticket' },
-                   { id:'student', label: language==='zh'?'學生電子預付卡 或 學生個人澳門通卡':'Student Stored' },
-                   { id:'free', label: language==='zh'?'長者/殘疾人士電子卡 或 長者/殘疾人士個人澳門通卡':'Senior/Disabled (Free)' },
+                   { id:'stored', label: language==='zh'?'一般電子預付卡 或 銷售版澳門通卡 或 特惠單程票':'Stored Value / Macau Pass / Special Single Ticket' },
+                   { id:'student', label: language==='zh'?'學生電子預付卡 或 學生個人澳門通卡':'Student Stored / Student Macau Pass' },
+                   { id:'free', label: language==='zh'?'長者/殘疾人士電子卡 或 長者/殘疾人士個人澳門通卡':'Senior/Disabled Card (Free)' },
                  ].map(type => (
                    <button key={type.id} onClick={()=>setFareType(type.id)} className={`p-3 rounded-xl text-left border ${fareType===type.id?'border-blue-500 bg-blue-50':'border-slate-200 bg-white'}`}>
                      <div className="flex items-center justify-between">
-                       <span className="font-medium text-slate-900">{type.label}</span>
-                       {fareType===type.id && <Check className="w-4 h-4 text-blue-600" />}
+                       <span className="font-medium text-slate-900 text-sm">{type.label}</span>
+                       {fareType===type.id && <Check className="w-4 h-4 text-blue-600 shrink-0 ml-2" />}
                      </div>
                    </button>
                  ))}
@@ -75,17 +90,17 @@ const FareQuery = () => {
                <div className="mt-4 text-xs text-slate-400">
                  {language==='zh'
                    ? '票價依行經站數分級：≤3/≤6/≤9/≤12。長者/殘疾人士電子卡 或 長者/殘疾人士個人澳門通卡為免費。銷售版/學生個人澳門通卡相等於相應電子預付卡。'
-                   : 'Fares by stops: ≤3/≤6/≤9/≤12. Senior/disabled e-card free. Macau Pass mirrors normal/student stored fares.'}
+                   : 'Fares are tiered based on the number of stations: ≤3/≤6/≤9/≤12. Elderly/Disabled cards are free. Personalized Macau Pass follows the same rates as the corresponding stored-value cards.'}
                </div>
              </div>
           </TabsContent>
 
           <TabsContent value="rules" className="mt-6 px-1">
-            <div className="space-y-4">
+            <div className="space-y-4 pb-20">
               {rules.map((rule, idx) => (
                 <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-start">
                   <Info className="w-5 h-5 text-blue-500 mt-0.5 mr-3 shrink-0" />
-                  <p className="text-slate-600 text-sm leading-relaxed">{rule}</p>
+                  <p className="text-slate-600 text-sm leading-relaxed">{language === 'zh' ? rule.zh : rule.en}</p>
                 </div>
               ))}
             </div>
