@@ -57,13 +57,13 @@ const FareQuery = () => {
 
           <TabsContent value="query" className="mt-6 space-y-6">
              <div className="space-y-3">
-               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">{language==='zh'?'票種':'Fare Type'}</label>
+               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">{t('fare_type')}</label>
                <div className="grid grid-cols-1 gap-3">
                  {[
-                   { id:'single', label: language==='zh'?'一般單程票':'Single Ticket' },
-                   { id:'stored', label: language==='zh'?'一般電子預付卡 或 銷售版澳門通卡 或 特惠單程票':'Stored Value / Macau Pass / Special Single Ticket' },
-                   { id:'student', label: language==='zh'?'學生電子預付卡 或 學生個人澳門通卡':'Student Stored / Student Macau Pass' },
-                   { id:'free', label: language==='zh'?'長者/殘疾人士電子卡 或 長者/殘疾人士個人澳門通卡':'Senior/Disabled Card (Free)' },
+                   { id:'single', label: t('fare_type_single') },
+                   { id:'stored', label: t('fare_type_stored') },
+                   { id:'student', label: t('fare_type_student') },
+                   { id:'free', label: t('fare_type_free') },
                  ].map(type => (
                    <button key={type.id} onClick={()=>setFareType(type.id)} className={`p-3 rounded-xl text-left border ${fareType===type.id?'border-blue-500 bg-blue-50':'border-slate-200 bg-white'}`}>
                      <div className="flex items-center justify-between">
@@ -77,20 +77,18 @@ const FareQuery = () => {
 
              <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl mt-2">
                <div className="flex justify-between items-center mb-6">
-                 <span className="text-slate-400 text-sm">{language==='zh'?'分級票價':'Tiered Fares'}</span>
+                 <span className="text-slate-400 text-sm">{t('fare_tiered')}</span>
                </div>
                <div className="space-y-4">
                   {bands.map((b, idx)=>(
                     <div className="flex justify-between text-sm" key={idx}>
-                      <span className="text-slate-300">{language==='zh'?`≤${b.max}站`:`≤${b.max} stops`}</span>
+                      <span className="text-slate-300">≤{b.max} {t('fare_stops_unit')}</span>
                       <span className="font-semibold">{`MOP ${priceFor(b).toFixed((priceFor(b)%1)?1:0)}`}</span>
                     </div>
                   ))}
                </div>
                <div className="mt-4 text-xs text-slate-400">
-                 {language==='zh'
-                   ? '票價依行經站數分級：≤3/≤6/≤9/≤12。長者/殘疾人士電子卡 或 長者/殘疾人士個人澳門通卡為免費。銷售版/學生個人澳門通卡相等於相應電子預付卡。'
-                   : 'Fares are tiered based on the number of stations: ≤3/≤6/≤9/≤12. Elderly/Disabled cards are free. Personalized Macau Pass follows the same rates as the corresponding stored-value cards.'}
+                 {t('fare_desc')}
                </div>
              </div>
           </TabsContent>

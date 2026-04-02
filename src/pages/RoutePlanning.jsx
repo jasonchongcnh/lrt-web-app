@@ -148,7 +148,7 @@ const RoutePlanning = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 md:col-span-1">
-              <label className="text-xs text-slate-500 mb-1 block">{language==='zh'?'起點':'From Station'}</label>
+              <label className="text-xs text-slate-500 mb-1 block">{t('route_from')}</label>
               <div className="mb-2">
                 <select value={fromLine} onChange={(e)=>{ 
                   const key = e.target.value; 
@@ -167,7 +167,7 @@ const RoutePlanning = () => {
               </select>
             </div>
             <div className="col-span-2 md:col-span-1">
-              <label className="text-xs text-slate-700 mb-1 block">{language==='zh'?'終點':'To Station'}</label>
+              <label className="text-xs text-slate-700 mb-1 block">{t('route_to')}</label>
               <div className="mb-2">
                 <select value={toLine} onChange={(e)=>{ 
                   const key = e.target.value; 
@@ -188,23 +188,23 @@ const RoutePlanning = () => {
           </div>
           <div className="grid grid-cols-1">
             <div className="col-span-1">
-              <label className="text-xs text-slate-1000 mb-1 block">{language==='zh'?'票種':'Fare Type'}</label>
+              <label className="text-xs text-slate-1000 mb-1 block">{t('route_fare_type')}</label>
               <select value={fareType} onChange={(e)=>setFareType(e.target.value)} className="w-full h-12 rounded-xl border border-slate-200 px-3 bg-slate-50">
-                <option value="single">{language==='zh'?'一般單程票':'Single Ticket'}</option>
-                <option value="stored">{language==='zh'?'一般電子預付卡 或 銷售版澳門通卡 或 特惠單程票':'Stored Value / Macau Pass'}</option>
-                <option value="student">{language==='zh'?'學生電子預付卡 或 學生個人澳門通卡':'Student Stored'}</option>
-                <option value="free">{language==='zh'?'長者/殘疾人士電子卡 或 長者/殘疾人士個人澳門通卡':'Senior/Disabled (Free)'}</option>
+                <option value="single">{t('fare_type_single')}</option>
+                <option value="stored">{t('fare_type_stored')}</option>
+                <option value="student">{t('fare_type_student')}</option>
+                <option value="free">{t('fare_type_free')}</option>
               </select>
             </div>
           </div>
           {route && (
             <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-slate-400 text-sm">{language==='zh'?'總票價':'Total Fare'}</span>
+                <span className="text-slate-400 text-sm">{t('route_total_fare')}</span>
                 <span className="text-2xl font-bold">{typeof result.price==='number'?`MOP ${result.price.toFixed((result.price%1)?1:0)}`:'—'}</span>
               </div>
               <div className="flex justify-between text-sm mb-4">
-                <span className="text-slate-400">{language==='zh'?'站數':'Stops'}</span>
+                <span className="text-slate-400">{t('route_stops_count')}</span>
                 <span>{result.stops}</span>
               </div>
               <div className="space-y-4">
@@ -212,7 +212,7 @@ const RoutePlanning = () => {
                   <div key={idx} className="bg-white/5 rounded-2xl p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">{leg.line}</span>
-                      <span className="text-xs text-slate-300">{language==='zh'?'需乘搭':'Ride'} · {leg.stops}{language==='zh'?'站':' stops'}</span>
+                      <span className="text-xs text-slate-300">{t('route_ride')} · {leg.stops} {t('route_stops_unit')}</span>
                     </div>
                     <div className="text-sm">
                       <div>{nameById(leg.from)} → {nameById(leg.to)}</div>
@@ -221,9 +221,7 @@ const RoutePlanning = () => {
                 ))}
               </div>
               <div className="mt-4 text-xs text-slate-400">
-                {language==='zh'
-                  ? '若經過媽閣↔海洋、蓮花↔橫琴段，各加一站；協和醫院為中途站時不計數。'
-                  : 'If crossing Barra↔Ocean or Lotus↔Hengqin, add one stop each; Union Hospital not counted when intermediate.'}
+                {t('route_notes')}
               </div>
             </div>
           )}

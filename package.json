@@ -1,25 +1,8 @@
 {
-  "name": "lrt-web-app",
-  "private": false,
-  "version": "1.0.0",
-  "description": "Macao Light Rail Transit (LRT) Information Web Application",
+  "name": "lrt-app-prototype",
+  "private": true,
+  "version": "0.0.0",
   "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/lrt-web-app.git"
-  },
-  "keywords": [
-    "macao",
-    "macau",
-    "lrt",
-    "light-rail",
-    "transit",
-    "transportation",
-    "react",
-    "vite"
-  ],
-  "author": "",
-  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

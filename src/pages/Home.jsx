@@ -41,10 +41,10 @@ const Home = () => {
     'Hengqin Line': ['Lotus','Hengqin']
   };
   const [manualStation, setManualStation] = useState('Barra');
-  const LINE_LABEL_ZH = {
-    'Taipa Line': '氹仔線',
-    'Seac Pai Van Line': '石排灣線',
-    'Hengqin Line': '橫琴線'
+  const LINE_LABELS = {
+    'Taipa Line': { zh: '氹仔線', en: 'Taipa Line' },
+    'Seac Pai Van Line': { zh: '石排灣線', en: 'Seac Pai Van Line' },
+    'Hengqin Line': { zh: '橫琴線', en: 'Hengqin Line' }
   };
 
   const [userLocation, setUserLocation] = useState(null);
@@ -81,7 +81,7 @@ const Home = () => {
       markerRef.current = new window.AMap.Marker({
         position: [lon, lat],
         map: mapInstance.current,
-        title: language === 'zh' ? '您的位置' : 'Your Location'
+        title: t('home_your_location')
       });
 
       if (accuracy) {
@@ -412,13 +412,17 @@ const Home = () => {
         const key = `${nearbyStation.id}-${idx}-${mins}`;
         if (!imminentRef.current[key]) {
           imminentRef.current[key] = true;
-          const title = language === 'zh' ? '列車即將到站' : 'Train arriving soon';
-          const bodyZh = `${getName(nearbyStation.name, language)} 往 ${getName(a.direction, language)} 列車即將到站`;
-          const bodyEn = `Train to ${getName(a.direction, language)} arriving soon at ${getName(nearbyStation.name, language)}`;
+          const title = t('home_train_arriving_soon');
+          const stationName = getName(nearbyStation.name, language);
+          const directionName = getName(a.direction, language);
+          const body = language === 'zh' 
+            ? `${stationName} 往 ${directionName} 列車即將到站`
+            : `Train to ${directionName} arriving soon at ${stationName}`;
+          
           if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            try { new Notification(title, { body: language==='zh' ? bodyZh : bodyEn, tag: 'arrival-imminent' }); } catch {}
+            try { new Notification(title, { body: body, tag: 'arrival-imminent' }); } catch {}
           }
-          alert(language==='zh' ? bodyZh : bodyEn);
+          alert(body);
         }
       }
     });
@@ -488,7 +492,7 @@ const Home = () => {
             {/* Accuracy Indicator Overlay */}
             {locAccuracy && (
               <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] text-white pointer-events-none z-10 border border-white/10">
-                {language === 'zh' ? '定位精度' : 'Accuracy'}: ±{Math.round(locAccuracy)}m
+                {t('home_accuracy')}: ±{Math.round(locAccuracy)}m
               </div>
             )}
 
@@ -497,7 +501,7 @@ const Home = () => {
                 <div className="bg-white/90 p-3 rounded-2xl shadow-xl flex items-center space-x-3">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
                   <span className="text-xs font-medium text-slate-600">
-                    {language === 'zh' ? '正在進行定位...' : 'Locating...'}
+                    {t('home_locating')}
                   </span>
                 </div>
               </div>
@@ -506,7 +510,7 @@ const Home = () => {
 
           {noNearby && (
             <div className="mb-3 text-xs text-yellow-100 bg-yellow-500/20 border border-yellow-300/40 rounded p-2">
-              {language === 'zh' ? '附近沒有輕軌站，已預設為媽閣站' : 'No LRT station near you, set default to Barra Station'}
+              {t('home_no_nearby_msg')}
             </div>
           )}
           <div className="space-y-3">
@@ -522,7 +526,7 @@ const Home = () => {
                    <div className="text-right">
                     {arrival.status === 'Out of Service' ? (
                       <span className="text-sm font-bold text-slate-400">
-                        {language === 'zh' ? '非營運時間' : 'Out of Service'}
+                        {t('home_out_of_service')}
                       </span>
                     ) : (
                       <>
@@ -556,19 +560,22 @@ const Home = () => {
       {/* Manual station selection */}
       <div className="px-6 pb-6">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
-          <h2 className="text-lg font-bold text-slate-800 mb-3">{language==='zh'?'選擇車站':'Select Station'}</h2>
+          <h2 className="text-lg font-bold text-slate-800 mb-3">{t('home_select_station')}</h2>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-slate-500 mb-1 block">{language==='zh'?'選擇路線':'Select Line'}</label>
+              <label className="text-xs text-slate-500 mb-1 block">{t('home_select_line')}</label>
               <select value={manualLine} onChange={(e)=>{ setManualLine(e.target.value); setManualStation(LINES[e.target.value][0]); }} className="w-full h-11 rounded-xl border border-slate-200 px-3 bg-slate-50">
-                {Object.keys(LINES).map(line => (<option key={line} value={line}>{LINE_LABEL_ZH[line] || line}</option>))}
+                {Object.keys(LINES).map(line => (<option key={line} value={line}>{getName(LINE_LABELS[line], language)}</option>))}
               </select>
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1 block">{language==='zh'?'選擇車站':'Select Station'}</label>
+              <label className="text-xs text-slate-500 mb-1 block">{t('home_select_station')}</label>
               <select value={manualStation} onChange={(e)=> setManualStation(e.target.value)} className="w-full h-11 rounded-xl border border-slate-200 px-3 bg-slate-50">
                 {LINES[manualLine].map(n => {
-                  const alias = { 'Taipa Ferry': 'Taipa Ferry Terminal' };
+                  const alias = { 
+                    'Taipa Ferry': 'Taipa Ferry Terminal',
+                    'Taipa Ferry Terminal': 'Taipa Ferry Terminal'
+                  };
                   const target = alias[n] || n;
                   const sObj = stations.find(s => s.name.en === target || s.name.zh === target);
                   const label = sObj ? getName(sObj.name, language) : (language==='zh'? n : n);
