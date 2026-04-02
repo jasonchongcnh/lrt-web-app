@@ -148,6 +148,24 @@ const StationDetails = () => {
     return [];
   })();
 
+  const surroundings = {
+    '1': { url: "https://mlm.com.mo/images/stations/station_2024/station_ST12.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '2': { url: "https://mlm.com.mo/images/stations/station_2023/ST13.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '3': { url: "https://mlm.com.mo/images/stations/station_2023/ST14.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '4': { url: "https://mlm.com.mo/images/stations/station_2023/ST15.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '5': { url: "https://mlm.com.mo/images/stations/station_2023/ST16.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '6': { url: "https://mlm.com.mo/images/stations/station_2023/ST17.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '7': { url: "https://mlm.com.mo/images/stations/station_2024/Station_2024_DEC/Lotus_HQ_station.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '8': { url: "https://mlm.com.mo/images/stations/station_2024/station_st18A.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '9': { url: "https://mlm.com.mo/images/stations/station_2023/ST19.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '10': { url: "https://mlm.com.mo/images/stations/station_2023/ST20.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '11': { url: "https://mlm.com.mo/images/stations/station_2023/ST21.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '12': { url: "https://mlm.com.mo/images/stations/station_2023/ST22.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '13': { url: "https://mlm.com.mo/images/stations/station_2023/ST23.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '14': { url: "https://mlm.com.mo/images/stations/station_2024/station_st18B.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+    '15': { url: "https://mlm.com.mo/images/stations/station_2024/STHQ.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
+  };
+
   return (
     <div className="bg-white min-h-screen pb-20 relative">
       {/* Header Image Area */}
@@ -193,7 +211,7 @@ const StationDetails = () => {
             </div>
             <div className="text-white/60 flex items-center text-[10px] font-medium bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
               <ZoomIn className="w-3 h-3 mr-1" />
-              {language === 'zh' ? '點擊查看大圖' : 'Click to zoom'}
+              {t('station_click_zoom')}
             </div>
           </div>
         </div>
@@ -220,7 +238,7 @@ const StationDetails = () => {
                     <CardContent className="p-4 flex justify-between items-center">
                       <div>
                         {(!entry.times || entry.times.length === 0) ? (
-                          <span className="text-sm font-bold text-slate-400">{language === 'zh' ? '非營運時間' : 'Out of Service'}</span>
+                          <span className="text-sm font-bold text-slate-400">{t('station_out_of_service')}</span>
                         ) : (
                           <>
                             <div className="flex items-baseline space-x-1">
@@ -310,48 +328,21 @@ const StationDetails = () => {
                 <div className="bg-slate-50 p-4 rounded-xl">
                    <h4 className="font-bold text-slate-900 mb-3 flex items-center">
                      <MapPin className="w-4 h-4 mr-2 text-blue-500" />
-                     {language === 'zh' ? '站點周邊資訊' : 'Station Surroundings'}
+                     {t('station_surroundings')}
                    </h4>
                    
-                   {/* Image interface */}
                    <div className="space-y-4">
-                      {id === '1' ? (
+                      {surroundings[id] ? (
                         <div 
                           className="w-auto bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
                           onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2024/station_ST12.png",
-                            title: language === 'zh' ? '媽閣站街道圖' : 'Barra Station Street Map'
+                            url: surroundings[id].url,
+                            title: surroundings[id].title
                           })}
                         >
                            <img 
-                             src="https://mlm.com.mo/images/stations/station_2024/station_ST12.png" 
-                             alt="Barra Station Street Map" 
-                             className="w-auto h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '媽閣站街道圖' : 'Barra Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '2' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST13.png",
-                            title: language === 'zh' ? '海洋站街道圖' : 'Ocean Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2023/ST13.png" 
-                             alt="Ocean Station Street Map" 
+                             src={surroundings[id].url} 
+                             alt={surroundings[id].title} 
                              className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
                            />
                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
@@ -359,357 +350,19 @@ const StationDetails = () => {
                            </div>
                            <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
                               <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '馬會站街道圖' : 'Jockey Club Station Street Map'}
+                                {surroundings[id].title}
                               </p>
                               <span className="text-[10px] text-blue-500 font-bold flex items-center">
                                 <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
+                                {t('station_click_zoom')}
                               </span>
                            </div>
                         </div>
-                      ) : id === '3' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST14.png",
-                            title: language === 'zh' ? '馬會站街道圖' : 'Jockey Club Station Street Map'
-                          })} 
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2023/ST14.png" 
-                             alt="Jockey Club Station Street Map" 
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '馬會站街道圖' : 'Jockey Club Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '4' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST15.png",
-                            title: language === 'zh' ? '運動場站街道圖' : 'Stadium Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2023/ST15.png" 
-                             alt="Stadium Station Street Map" 
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '運動場站街道圖' : 'Stadium Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '5' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST16.png",
-                            title: language === 'zh' ? '排角站街道圖' : 'Pai Kok Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2023/ST16.png" 
-                             alt="Pai Kok Station Street Map" 
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '排角站街道圖' : 'Pai Kok Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '6' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST17.png",
-                            title: language === 'zh' ? '路氹西站街道圖' : 'Cotai West Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2023/ST17.png" 
-                             alt="Cotai West Station Street Map" 
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '路氹西站街道圖' : 'Cotai West Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '7' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2024/Station_2024_DEC/Lotus_HQ_station.png",
-                            title: language === 'zh' ? '蓮花站街道圖' : 'Lotus Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2024/Station_2024_DEC/Lotus_HQ_station.png" 
-                             alt="Lotus Station Street Map" 
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '蓮花站街道圖' : 'Lotus Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      )  : id === '8' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2024/station_st18A.png",
-                            title: language === 'zh' ? '協和醫院站街道圖' : 'Union Hospital Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2024/station_st18A.png" 
-                             alt="Union Hospital Station Street Map" 
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '協和醫院站街道圖' : 'Union Hospital Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '9' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST19.png",
-                            title: language === 'zh' ? '東亞運站街道圖' : 'East Asia Games Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2023/ST19.png" 
-                             alt="East Asia Games Station Street Map" 
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '東亞運站街道圖' : 'East Asia Games Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '10' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST20.png",
-                            title: language === 'zh' ? '路氹東站街道圖' : 'Cotai East Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2023/ST20.png" 
-                             alt="Cotai East Station Street Map" 
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '路氹東站街道圖' : 'Cotai East Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '11' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST21.png",
-                            title: language === 'zh' ? '科大站街道圖' : 'MUST Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2023/ST21.png" 
-                             alt="MUST Station Street Map" 
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '科大站街道圖' : 'MUST Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '12' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST22.png",
-                            title: language === 'zh' ? '機場站街道圖' : 'Airport Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2023/ST22.png" 
-                             alt="Airport Station Street Map"
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '機場站街道圖' : 'Airport Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '13' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST23.png",
-                            title: language === 'zh' ? '氹仔碼頭站街道圖' : 'Tapia Ferry Terminal Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2023/ST23.png" 
-                             alt="Tapia Ferry Terminal Station Street Map"
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '氹仔碼頭站街道圖' : 'Tapia Ferry Terminal Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '14' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2024/station_st18B.png",
-                            title: language === 'zh' ? '石排灣站街道圖' : 'Seac Pai Van Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2024/station_st18B.png" 
-                             alt="Seac Pai Van Station Street Map"
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '石排灣站街道圖' : 'Seac Pai Van Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ) : id === '15' ? (
-                        <div 
-                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2024/STHQ.png",
-                            title: language === 'zh' ? '橫琴站街道圖' : 'Hengqin Station Street Map'
-                          })}
-                        >
-                           <img 
-                             src="https://mlm.com.mo/images/stations/station_2024/STHQ.png" 
-                             alt="Hengqin Station Street Map"
-                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                           />
-                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
-                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
-                           </div>
-                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                              <p className="text-xs text-slate-500 font-medium">
-                                {language === 'zh' ? '橫琴站街道圖' : 'Hengqin Station Street Map'}
-                              </p>
-                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
-                                <ZoomIn className="w-3 h-3 mr-1" />
-                                {language === 'zh' ? '點擊放大' : 'Click to zoom'}
-                              </span>
-                           </div>
-                        </div>
-                      ): (
+                      ) : (
                         <div className="aspect-video bg-slate-200 rounded-xl overflow-hidden flex items-center justify-center relative group border-2 border-dashed border-slate-300">
                            <div className="text-center p-6">
                               <Share2 className="w-8 h-8 mx-auto mb-2 text-slate-400 opacity-50" />
-                              <p className="text-xs text-slate-500">{language === 'zh' ? '周邊地圖 / 景點圖片預留位' : 'Placeholder for surrounding map / scenery'}</p>
+                              <p className="text-xs text-slate-500">{t('station_placeholder_img')}</p>
                            </div>
                         </div>
                       )}
@@ -752,13 +405,13 @@ const StationDetails = () => {
           <div className="mt-6 text-center text-white space-y-2 animate-in slide-in-from-bottom-4 duration-500">
             <h3 className="text-xl font-bold">{activeImage.title}</h3>
             <p className="text-sm text-white/60">
-              {language === 'zh' ? '點擊背景或按右上角關閉' : 'Click background or top-right to close'}
+              {t('station_zoom_close')}
             </p>
           </div>
         </div>
       )}
 
-      {/* Reminder Bottom Sheet Mock */}
+      {/* Reminder Bottom Sheet */}
       {showReminder && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
            <div className="bg-white w-full max-w-md rounded-t-2xl p-6 space-y-6 animate-in slide-in-from-bottom duration-300">

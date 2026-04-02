@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Clock, MapPin, ChevronRight, Bell, AlertTriangle, Star } from 'lucide-react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { stations, arrivals, announcements } from '../lib/data';
 import { cn, getName } from '../lib/utils';
 import { useLanguage } from '../contexts/LanguageContext';
-import {
+import { 
   getNextBarraArrivals, 
   getNextOceanArrivals, 
   getNextJockeyClubArrivals, 
@@ -26,13 +24,6 @@ import {
   getNextLotusHengqinArrivals,
   getNextHengqinArrivals
 } from '../lib/timetable';
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
-  iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
-  shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
-});
 
 const Home = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -79,21 +70,21 @@ const Home = () => {
   };
 
   const initMap = (lat, lon, accuracy) => {
-    if (mapRef.current && !mapInstance.current) {
+    if (window.L && mapRef.current && !mapInstance.current) {
       // Initialize Leaflet map
-      mapInstance.current = L.map(mapRef.current).setView([lat, lon], 15);
+      mapInstance.current = window.L.map(mapRef.current).setView([lat, lon], 15);
       
       // Add OpenStreetMap tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(mapInstance.current);
 
       // Add user marker
-      userMarkerRef.current = L.marker([lat, lon]).addTo(mapInstance.current)
-        .bindPopup(language === 'zh' ? '您的位置' : 'Your Location');
+      userMarkerRef.current = window.L.marker([lat, lon]).addTo(mapInstance.current)
+        .bindPopup(t('home_your_location'));
 
       if (accuracy) {
-        accuracyCircleRef.current = L.circle([lat, lon], {
+        accuracyCircleRef.current = window.L.circle([lat, lon], {
           radius: accuracy,
           color: '#38bdf8',
           fillColor: '#38bdf8',
@@ -105,7 +96,7 @@ const Home = () => {
       // Add station markers
       stations.forEach(s => {
         if (s.coords) {
-          const marker = L.circleMarker([s.coords.lat, s.coords.lon], {
+          const marker = window.L.circleMarker([s.coords.lat, s.coords.lon], {
             radius: 8,
             fillColor: "#3b82f6",
             color: "#ffffff",
@@ -129,13 +120,14 @@ const Home = () => {
       mapInstance.current.setView([lat, lon]);
       if (userMarkerRef.current) {
         userMarkerRef.current.setLatLng([lat, lon]);
+        userMarkerRef.current.getPopup()?.setContent(t('home_your_location'));
       }
       if (accuracy) {
         if (accuracyCircleRef.current) {
           accuracyCircleRef.current.setLatLng([lat, lon]);
           accuracyCircleRef.current.setRadius(accuracy);
         } else {
-          accuracyCircleRef.current = L.circle([lat, lon], {
+          accuracyCircleRef.current = window.L.circle([lat, lon], {
             radius: accuracy,
             color: '#38bdf8',
             fillColor: '#38bdf8',
@@ -412,13 +404,12 @@ const Home = () => {
         const key = `${nearbyStation.id}-${idx}-${mins}`;
         if (!imminentRef.current[key]) {
           imminentRef.current[key] = true;
-          const title = language === 'zh' ? '列車即將到站' : 'Train arriving soon';
-          const bodyZh = `${getName(nearbyStation.name, language)} 往 ${getName(a.direction, language)} 列車即將到站`;
-          const bodyEn = `Train to ${getName(a.direction, language)} arriving soon at ${getName(nearbyStation.name, language)}`;
+          const title = t('home_train_arriving_soon');
+          const body = t('home_train_to').replace('{direction}', getName(a.direction, language));
           if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            try { new Notification(title, { body: language==='zh' ? bodyZh : bodyEn, tag: 'arrival-imminent' }); } catch {}
+            try { new Notification(title, { body, tag: 'arrival-imminent' }); } catch {}
           }
-          alert(language==='zh' ? bodyZh : bodyEn);
+          alert(body);
         }
       }
     });
@@ -488,7 +479,7 @@ const Home = () => {
             {/* Accuracy Indicator Overlay */}
             {locAccuracy && (
               <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] text-white pointer-events-none z-10 border border-white/10">
-                {language === 'zh' ? '定位精度' : 'Accuracy'}: ±{Math.round(locAccuracy)}m
+                {t('home_accuracy')}: ±{Math.round(locAccuracy)}m
               </div>
             )}
 
@@ -497,7 +488,7 @@ const Home = () => {
                 <div className="bg-white/90 p-3 rounded-2xl shadow-xl flex items-center space-x-3">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
                   <span className="text-xs font-medium text-slate-600">
-                    {language === 'zh' ? '正在進行定位...' : 'Locating...'}
+                    {t('home_locating')}
                   </span>
                 </div>
               </div>
@@ -506,7 +497,7 @@ const Home = () => {
 
           {noNearby && (
             <div className="mb-3 text-xs text-yellow-100 bg-yellow-500/20 border border-yellow-300/40 rounded p-2">
-              {language === 'zh' ? '附近沒有輕軌站，已預設為媽閣站' : 'No LRT station near you, set default to Barra Station'}
+              {t('home_no_nearby_barra')}
             </div>
           )}
           <div className="space-y-3">
@@ -522,7 +513,7 @@ const Home = () => {
                    <div className="text-right">
                     {arrival.status === 'Out of Service' ? (
                       <span className="text-sm font-bold text-slate-400">
-                        {language === 'zh' ? '非營運時間' : 'Out of Service'}
+                        {t('station_out_of_service')}
                       </span>
                     ) : (
                       <>
@@ -556,16 +547,16 @@ const Home = () => {
       {/* Manual station selection */}
       <div className="px-6 pb-6">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
-          <h2 className="text-lg font-bold text-slate-800 mb-3">{language==='zh'?'選擇車站':'Select Station'}</h2>
+          <h2 className="text-lg font-bold text-slate-800 mb-3">{t('home_select_station')}</h2>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-slate-500 mb-1 block">{language==='zh'?'選擇路線':'Select Line'}</label>
+              <label className="text-xs text-slate-500 mb-1 block">{t('home_select_line')}</label>
               <select value={manualLine} onChange={(e)=>{ setManualLine(e.target.value); setManualStation(LINES[e.target.value][0]); }} className="w-full h-11 rounded-xl border border-slate-200 px-3 bg-slate-50">
                 {Object.keys(LINES).map(line => (<option key={line} value={line}>{getName(LINE_LABELS[line], language)}</option>))}
               </select>
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1 block">{language==='zh'?'選擇車站':'Select Station'}</label>
+              <label className="text-xs text-slate-500 mb-1 block">{t('home_select_station')}</label>
               <select value={manualStation} onChange={(e)=> setManualStation(e.target.value)} className="w-full h-11 rounded-xl border border-slate-200 px-3 bg-slate-50">
                 {LINES[manualLine].map(n => {
                   const alias = { 
@@ -574,7 +565,7 @@ const Home = () => {
                   };
                   const target = alias[n] || n;
                   const sObj = stations.find(s => s.name.en === target || s.name.zh === target);
-                  const label = sObj ? getName(sObj.name, language) : (language==='zh'? n : n);
+                  const label = sObj ? getName(sObj.name, language) : n;
                   return (<option key={n} value={n}>{label}</option>);
                 })}
               </select>
