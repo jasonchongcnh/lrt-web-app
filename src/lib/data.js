@@ -5,7 +5,7 @@ export const stations = [
   { 
     id: '1', 
     name: { en: 'Barra', zh: '媽閣站' }, 
-    image: assetUrl('Barra.jpg'), 
+    image: 'public/Barra.jpg', 
     line: { en: 'Taipa Line', zh: '氹仔線' },
     coords: { lon: 113.529448, lat: 22.183645 }
   },
