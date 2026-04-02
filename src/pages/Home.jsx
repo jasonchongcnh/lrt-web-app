@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Clock, MapPin, ChevronRight, Bell, AlertTriangle, Star } from 'lucide-react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { stations, arrivals, announcements } from '../lib/data';
 import { cn, getName } from '../lib/utils';
 import { useLanguage } from '../contexts/LanguageContext';
-import { 
+import {
   getNextBarraArrivals, 
   getNextOceanArrivals, 
   getNextJockeyClubArrivals, 
@@ -24,6 +26,13 @@ import {
   getNextLotusHengqinArrivals,
   getNextHengqinArrivals
 } from '../lib/timetable';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
+  iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
+  shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
+});
 
 const Home = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -70,21 +79,21 @@ const Home = () => {
   };
 
   const initMap = (lat, lon, accuracy) => {
-    if (window.L && mapRef.current && !mapInstance.current) {
+    if (mapRef.current && !mapInstance.current) {
       // Initialize Leaflet map
-      mapInstance.current = window.L.map(mapRef.current).setView([lat, lon], 15);
+      mapInstance.current = L.map(mapRef.current).setView([lat, lon], 15);
       
       // Add OpenStreetMap tiles
-      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(mapInstance.current);
 
       // Add user marker
-      userMarkerRef.current = window.L.marker([lat, lon]).addTo(mapInstance.current)
+      userMarkerRef.current = L.marker([lat, lon]).addTo(mapInstance.current)
         .bindPopup(language === 'zh' ? '您的位置' : 'Your Location');
 
       if (accuracy) {
-        accuracyCircleRef.current = window.L.circle([lat, lon], {
+        accuracyCircleRef.current = L.circle([lat, lon], {
           radius: accuracy,
           color: '#38bdf8',
           fillColor: '#38bdf8',
@@ -96,7 +105,7 @@ const Home = () => {
       // Add station markers
       stations.forEach(s => {
         if (s.coords) {
-          const marker = window.L.circleMarker([s.coords.lat, s.coords.lon], {
+          const marker = L.circleMarker([s.coords.lat, s.coords.lon], {
             radius: 8,
             fillColor: "#3b82f6",
             color: "#ffffff",
@@ -126,7 +135,7 @@ const Home = () => {
           accuracyCircleRef.current.setLatLng([lat, lon]);
           accuracyCircleRef.current.setRadius(accuracy);
         } else {
-          accuracyCircleRef.current = window.L.circle([lat, lon], {
+          accuracyCircleRef.current = L.circle([lat, lon], {
             radius: accuracy,
             color: '#38bdf8',
             fillColor: '#38bdf8',
