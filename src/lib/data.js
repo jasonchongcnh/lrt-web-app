@@ -3,109 +3,109 @@ export const stations = [
   { 
     id: '1', 
     name: { en: 'Barra', zh: '媽閣站' }, 
-    image: 'public/route_map.png', 
+    image: '/Barra.jpg', 
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.534531, lat: 22.180788 }
+    coords: { lon: 113.529448, lat: 22.183645 }
   },
   { 
     id: '2', 
     name: { en: 'Ocean', zh: '海洋站' }, 
-    image: 'https://images.unsplash.com/photo-1542367787-4baf35f3037d?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Ocean.jpg', 
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.534531, lat: 22.180788 }
+    coords: { lon: 113.541308, lat: 22.157808 }
   },
   { 
     id: '3', 
     name: { en: 'Jockey Club', zh: '馬會站' }, 
-    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Jockey-Club.jpg', 
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.552304, lat: 22.154209 }
+    coords: { lon: 113.547273, lat: 22.157102 }
   },
   { 
     id: '4', 
     name: { en: 'Stadium', zh: '運動場站' }, 
-    image: 'https://images.unsplash.com/photo-1519999482648-25049ddd37b1?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Stadium.jpg', 
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.556949, lat: 22.151413 }
+    coords: { lon: 113.551897, lat: 22.154351 }
   },
   { 
     id: '5', 
     name: { en: 'Pai Kok', zh: '排角站' }, 
-    image: 'https://images.unsplash.com/photo-1542367787-4baf35f3037d?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Pai-Kok.jpg',
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.559565, lat: 22.147918 }
+    coords: { lon: 113.554558, lat: 22.150893 }
   },
   { 
     id: '6', 
     name: { en: 'Cotai West', zh: '路氹西站' }, 
-    image: 'https://images.unsplash.com/photo-1542367787-4baf35f3037d?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Cotai-West.jpg',
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.562919, lat: 22.142109 }
+    coords: { lon: 113.557873, lat: 22.145079 }
   },
   { 
     id: '7', 
     name: { en: 'Lotus', zh: '蓮花站' }, 
-    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Lotus.jpg', 
     line: { en: 'Taipa Line / Hengqin Line', zh: '氹仔線 / 橫琴線' },
-    coords: { lon: 113.564764, lat: 22.136424 }
+    coords: { lon: 113.559826, lat: 22.139454 }
   },
   { 
     id: '8', 
     name: { en: 'Union Hospital', zh: '協和醫院站' }, 
-    image: 'https://images.unsplash.com/photo-1519999482648-25049ddd37b1?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Union-Hospital.jpg', 
     line: { en: 'Taipa Line / Seac Pai Van Line', zh: '氹仔線 / 石排灣線' },
-    coords: { lon: 113.568326, lat: 22.135091 }
+    coords: { lon: 113.563344, lat: 22.138679 }
   },
   { 
     id: '9', 
     name: { en: 'East Asian Games', zh: '東亞運站' }, 
-    image: 'https://images.unsplash.com/photo-1542367787-4baf35f3037d?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/East-Asian-Games.jpg', 
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.550496, lat: 22.136961 }
+    coords: { lon: 113.568666, lat: 22.142414 }
   },
   { 
     id: '10', 
     name: { en: 'Cotai East', zh: '路氹東站' }, 
-    image: 'https://images.unsplash.com/photo-1542367787-4baf35f3037d?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Cotai-East.jpg',
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.574148, lat: 22.145229 }
+    coords: { lon: 113.569149, lat: 22.148239 }
   },
   { 
     id: '11', 
     name: { en: 'MUST', zh: '科大站' }, 
-    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/MUST.jpg', 
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.575701, lat: 22.150121 }
+    coords: { lon: 113.570598, lat: 22.153058 }
   },
   { 
     id: '12', 
     name: { en: 'Airport', zh: '機場站' }, 
-    image: 'https://images.unsplash.com/photo-1519999482648-25049ddd37b1?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Airport.jpg', 
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.5760, lat: 22.1486 }
+    coords: { lon: 113.574631, lat: 22.159417 }
   },
   { 
     id: '13', 
     name: { en: 'Taipa Ferry Terminal', zh: '氹仔碼頭站' }, 
-    image: 'https://images.unsplash.com/photo-1542367787-4baf35f3037d?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Taipa-Ferry-Terminal.jpg', 
     line: { en: 'Taipa Line', zh: '氹仔線' },
-    coords: { lon: 113.579, lat: 22.160 }
+    coords: { lon: 113.573891, lat: 22.162984 }
   },
   // Seac Pai Van Line (L2) - Union Hospital already defined above
   { 
     id: '14', 
     name: { en: 'Seac Pai Van', zh: '石排灣站' }, 
-    image: 'https://images.unsplash.com/photo-1542367787-4baf35f3037d?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Seac-Pai-Van.jpg', 
     line: { en: 'Seac Pai Van Line', zh: '石排灣線' },
-    coords: { lon: 113.566693, lat: 22.128486 }
+    coords: { lon: 113.561600, lat: 22.131370 }
   },
   // Hengqin Line (L3) - Lotus already defined above
   { 
     id: '15', 
     name: { en: 'Hengqin', zh: '橫琴站' }, 
-    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&q=80&w=300&h=200', 
+    image: '/Hengqin.jpg', 
     line: { en: 'Hengqin Line', zh: '橫琴線' },
-    coords: { lon: 113.5449167, lat: 22.1406595 }
+    coords: { lon: 113.544903, lat: 22.140646 }
   },
 ];
 
@@ -117,6 +117,6 @@ export const arrivals = [
 ];
 
 export const announcements = [
-  { id: '1', title: { en: 'Weekend Maintenance', zh: '週末維護通知' }, image: 'https://images.unsplash.com/photo-1621955964441-c173e01c135b?auto=format&fit=crop&q=80&w=600&h=200' },
-  { id: '2', title: { en: 'New Fares', zh: '新票價公告' }, image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=600&h=200' },
+  { id: '1', title: { en: 'Weekend Maintenance', zh: '週末維護通知' }, image: '/Weekend-Maintenance.jpg' },
+  { id: '2', title: { en: 'New Fares', zh: '新票價公告' }, image: '/New-Fares.jpg' },
 ];

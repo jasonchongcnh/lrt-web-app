@@ -148,7 +148,7 @@ const RoutePlanning = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 md:col-span-1">
-              <label className="text-xs text-slate-500 mb-1 block">{t('route_from')}</label>
+              <label className="text-xs text-slate-500 mb-1 block">{language==='zh'?'起點':'From Station'}</label>
               <div className="mb-2">
                 <select value={fromLine} onChange={(e)=>{ 
                   const key = e.target.value; 
@@ -167,7 +167,7 @@ const RoutePlanning = () => {
               </select>
             </div>
             <div className="col-span-2 md:col-span-1">
-              <label className="text-xs text-slate-700 mb-1 block">{t('route_to')}</label>
+              <label className="text-xs text-slate-700 mb-1 block">{language==='zh'?'終點':'To Station'}</label>
               <div className="mb-2">
                 <select value={toLine} onChange={(e)=>{ 
                   const key = e.target.value; 
@@ -188,23 +188,23 @@ const RoutePlanning = () => {
           </div>
           <div className="grid grid-cols-1">
             <div className="col-span-1">
-              <label className="text-xs text-slate-1000 mb-1 block">{t('route_fare_type')}</label>
+              <label className="text-xs text-slate-700 mb-1 block">{language==='zh'?'票種':'Fare Type'}</label>
               <select value={fareType} onChange={(e)=>setFareType(e.target.value)} className="w-full h-12 rounded-xl border border-slate-200 px-3 bg-slate-50">
-                <option value="single">{t('fare_type_single')}</option>
-                <option value="stored">{t('fare_type_stored')}</option>
-                <option value="student">{t('fare_type_student')}</option>
-                <option value="free">{t('fare_type_free')}</option>
+                <option value="single">{language==='zh'?'一般單程票':'Single Journey Tickets'}</option>
+                <option value="stored">{language==='zh'?'一般電子預付卡 | 銷售版澳門通卡 | 特惠單程票':'General Electronic Prepaid Card | Macau Pass | Concessionary Single Journey Ticket'}</option>
+                <option value="student">{language==='zh'?'學生電子預付卡 | 學生個人澳門通卡':'Student Electronic Prepaid Card | Student Macau Pass'}</option>
+                <option value="free">{language==='zh'?'長者/殘疾人士電子卡 | 長者/殘疾人士個人澳門通卡':'Senior/Disabled Electronic Card | Senior/Disabled Macau Pass'}</option>``
               </select>
             </div>
           </div>
           {route && (
             <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-slate-400 text-sm">{t('route_total_fare')}</span>
+                <span className="text-slate-400 text-sm">{language==='zh'?'總票價':'Total Fare'}</span>
                 <span className="text-2xl font-bold">{typeof result.price==='number'?`MOP ${result.price.toFixed((result.price%1)?1:0)}`:'—'}</span>
               </div>
               <div className="flex justify-between text-sm mb-4">
-                <span className="text-slate-400">{t('route_stops_count')}</span>
+                <span className="text-slate-400">{language==='zh'?'站數':'Stops'}</span>
                 <span>{result.stops}</span>
               </div>
               <div className="space-y-4">
@@ -212,7 +212,7 @@ const RoutePlanning = () => {
                   <div key={idx} className="bg-white/5 rounded-2xl p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">{leg.line}</span>
-                      <span className="text-xs text-slate-300">{t('route_ride')} · {leg.stops} {t('route_stops_unit')}</span>
+                      <span className="text-xs text-slate-300">{language==='zh'?'需乘搭':'Ride'} · {leg.stops}{language==='zh'?'站':' stops'}</span>
                     </div>
                     <div className="text-sm">
                       <div>{nameById(leg.from)} → {nameById(leg.to)}</div>
@@ -221,7 +221,9 @@ const RoutePlanning = () => {
                 ))}
               </div>
               <div className="mt-4 text-xs text-slate-400">
-                {t('route_notes')}
+                {language==='zh'
+                  ? '1. 每個涉及媽閣站往來海洋站或橫琴站往來蓮花站的跨海段，於計算車站數目時增加一個車站；2. 以石排灣站或協和醫院站作為旅程起點或終點時，協和醫院站均視作一站計算。除此之外，協和醫院站不作站點計算。'
+                  : '1.Each sea crossing section need to be considered as two stations when calculating the number of stations, which involve the section between Barra and Ocean Station or the section between Hengqin Station and Lotus Station. 2.If passengers start or end their journey from Seac Pai Van Station or Union Hospital Station, Union Hospital Station is counted as a stop when calculating the fare, Otherwise, the station will not be counted as a stop.'}
               </div>
             </div>
           )}

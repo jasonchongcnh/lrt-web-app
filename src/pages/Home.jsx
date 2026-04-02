@@ -52,8 +52,9 @@ const Home = () => {
   const [isLocating, setIsLocating] = useState(false);
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
-  const markerRef = useRef(null);
-  const circleRef = useRef(null);
+  const userMarkerRef = useRef(null);
+  const accuracyCircleRef = useRef(null);
+  const stationMarkersRef = useRef({});
   
   const toRad = d => (d * Math.PI) / 180;
   const haversine = (lat1, lon1, lat2, lon2) => {
@@ -69,53 +70,69 @@ const Home = () => {
   };
 
   const initMap = (lat, lon, accuracy) => {
-    if (window.AMap && mapRef.current && !mapInstance.current) {
-      mapInstance.current = new window.AMap.Map(mapRef.current, {
-        center: [lon, lat],
-        zoom: 15,
-        resizeEnable: true,
-        viewMode: '3D',
-        pitch: 45
-      });
+    if (window.L && mapRef.current && !mapInstance.current) {
+      // Initialize Leaflet map
+      mapInstance.current = window.L.map(mapRef.current).setView([lat, lon], 15);
+      
+      // Add OpenStreetMap tiles
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(mapInstance.current);
 
-      markerRef.current = new window.AMap.Marker({
-        position: [lon, lat],
-        map: mapInstance.current,
-        title: t('home_your_location')
-      });
+      // Add user marker
+      userMarkerRef.current = window.L.marker([lat, lon]).addTo(mapInstance.current)
+        .bindPopup(language === 'zh' ? '您的位置' : 'Your Location');
 
       if (accuracy) {
-        circleRef.current = new window.AMap.Circle({
-          center: [lon, lat],
-          radius: accuracy, // meters
-          strokeColor: "#38bdf8",
-          strokeOpacity: 0.5,
-          strokeWeight: 2,
-          fillColor: "#38bdf8",
+        accuracyCircleRef.current = window.L.circle([lat, lon], {
+          radius: accuracy,
+          color: '#38bdf8',
+          fillColor: '#38bdf8',
           fillOpacity: 0.15,
-          map: mapInstance.current
-        });
+          weight: 2
+        }).addTo(mapInstance.current);
       }
+
+      // Add station markers
+      stations.forEach(s => {
+        if (s.coords) {
+          const marker = window.L.circleMarker([s.coords.lat, s.coords.lon], {
+            radius: 8,
+            fillColor: "#3b82f6",
+            color: "#ffffff",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+          }).addTo(mapInstance.current);
+          
+          marker.bindTooltip(getName(s.name, language), { permanent: false, direction: 'top' });
+          
+          marker.on('click', () => {
+            setCurrentStation(s);
+            setNoNearby(false);
+            setManualStation(s.name.en);
+          });
+
+          stationMarkersRef.current[s.id] = marker;
+        }
+      });
     } else if (mapInstance.current) {
-      mapInstance.current.setCenter([lon, lat]);
-      if (markerRef.current) {
-        markerRef.current.setPosition([lon, lat]);
+      mapInstance.current.setView([lat, lon]);
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setLatLng([lat, lon]);
       }
       if (accuracy) {
-        if (circleRef.current) {
-          circleRef.current.setCenter([lon, lat]);
-          circleRef.current.setRadius(accuracy);
+        if (accuracyCircleRef.current) {
+          accuracyCircleRef.current.setLatLng([lat, lon]);
+          accuracyCircleRef.current.setRadius(accuracy);
         } else {
-          circleRef.current = new window.AMap.Circle({
-            center: [lon, lat],
+          accuracyCircleRef.current = window.L.circle([lat, lon], {
             radius: accuracy,
-            strokeColor: "#38bdf8",
-            strokeOpacity: 0.5,
-            strokeWeight: 2,
-            fillColor: "#38bdf8",
+            color: '#38bdf8',
+            fillColor: '#38bdf8',
             fillOpacity: 0.15,
-            map: mapInstance.current
-          });
+            weight: 2
+          }).addTo(mapInstance.current);
         }
       }
     }
@@ -146,42 +163,16 @@ const Home = () => {
 
   const requestGeolocation = () => {
     setIsLocating(true);
-    if (window.AMap) {
-      window.AMap.plugin('AMap.Geolocation', function() {
-        const geolocation = new window.AMap.Geolocation({
-          enableHighAccuracy: true,
-          timeout: 10000,
-          buttonPosition: 'RB',
-          zoomToAccuracy: true,
-          showButton: false // We use our own button
-        });
-        
-        geolocation.getCurrentPosition(function(status, result) {
-          if (status === 'complete') {
-            handleLocationSuccess(result.position.lat, result.position.lng, result.accuracy);
-          } else {
-            // Fallback to native geolocation if AMap fails
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(
-                pos => handleLocationSuccess(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
-                () => { 
-                  setIsLocating(false);
-                  setCurrentStation(stations[0]); 
-                  setNoNearby(true);
-                  initMap(22.180788, 113.534531); 
-                },
-                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-              );
-            } else {
-              setIsLocating(false);
-            }
-          }
-        });
-      });
-    } else if (navigator.geolocation) {
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         pos => handleLocationSuccess(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
-        () => { setIsLocating(false); setCurrentStation(stations[0]); setNoNearby(true); },
+        () => { 
+          setIsLocating(false);
+          setCurrentStation(stations[0]); 
+          setNoNearby(true);
+          // Default to Barra if location fails
+          initMap(22.180788, 113.534531); 
+        },
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
       );
     } else {
@@ -205,7 +196,7 @@ const Home = () => {
     return () => {
       clearInterval(interval);
       if (mapInstance.current) {
-        mapInstance.current.destroy();
+        mapInstance.current.remove();
         mapInstance.current = null;
       }
     };
@@ -412,17 +403,13 @@ const Home = () => {
         const key = `${nearbyStation.id}-${idx}-${mins}`;
         if (!imminentRef.current[key]) {
           imminentRef.current[key] = true;
-          const title = t('home_train_arriving_soon');
-          const stationName = getName(nearbyStation.name, language);
-          const directionName = getName(a.direction, language);
-          const body = language === 'zh' 
-            ? `${stationName} 往 ${directionName} 列車即將到站`
-            : `Train to ${directionName} arriving soon at ${stationName}`;
-          
+          const title = language === 'zh' ? '列車即將到站' : 'Train arriving soon';
+          const bodyZh = `${getName(nearbyStation.name, language)} 往 ${getName(a.direction, language)} 列車即將到站`;
+          const bodyEn = `Train to ${getName(a.direction, language)} arriving soon at ${getName(nearbyStation.name, language)}`;
           if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            try { new Notification(title, { body: body, tag: 'arrival-imminent' }); } catch {}
+            try { new Notification(title, { body: language==='zh' ? bodyZh : bodyEn, tag: 'arrival-imminent' }); } catch {}
           }
-          alert(body);
+          alert(language==='zh' ? bodyZh : bodyEn);
         }
       }
     });
@@ -474,25 +461,25 @@ const Home = () => {
           
           {/* Embedded Map Container */}
           <div className="w-full h-48 rounded-xl overflow-hidden mb-4 relative bg-slate-200 shadow-inner group">
-            <div ref={mapRef} className="w-full h-full" id="amap-container"></div>
+            <div ref={mapRef} className="w-full h-full" id="map-container"></div>
             
-            {/* Manual Locate Button */}
+            {/* Manual Locate Button - Positioned below Zoom Controls */}
             <Button 
               size="icon"
               className={cn(
-                "absolute bottom-3 right-3 rounded-full shadow-lg transition-all z-10",
-                isLocating ? "bg-blue-100 text-blue-600 animate-pulse" : "bg-white text-slate-700 hover:bg-blue-50"
+                "absolute top-[84px] left-[10px] w-[34px] h-[34px] rounded-sm shadow-md transition-all z-[1000] border-2 border-black/20",
+                isLocating ? "bg-blue-100 text-blue-600 animate-pulse" : "bg-white text-slate-700 hover:bg-slate-50"
               )}
               onClick={requestGeolocation}
               disabled={isLocating}
             >
-              <MapPin className={cn("w-5 h-5", isLocating && "animate-bounce")} />
+              <MapPin className={cn("w-4 h-4", isLocating && "animate-bounce")} />
             </Button>
 
             {/* Accuracy Indicator Overlay */}
             {locAccuracy && (
               <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] text-white pointer-events-none z-10 border border-white/10">
-                {t('home_accuracy')}: ±{Math.round(locAccuracy)}m
+                {language === 'zh' ? '定位精度' : 'Accuracy'}: ±{Math.round(locAccuracy)}m
               </div>
             )}
 
@@ -501,7 +488,7 @@ const Home = () => {
                 <div className="bg-white/90 p-3 rounded-2xl shadow-xl flex items-center space-x-3">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
                   <span className="text-xs font-medium text-slate-600">
-                    {t('home_locating')}
+                    {language === 'zh' ? '正在進行定位...' : 'Locating...'}
                   </span>
                 </div>
               </div>
@@ -510,7 +497,7 @@ const Home = () => {
 
           {noNearby && (
             <div className="mb-3 text-xs text-yellow-100 bg-yellow-500/20 border border-yellow-300/40 rounded p-2">
-              {t('home_no_nearby_msg')}
+              {language === 'zh' ? '附近沒有輕軌站，已預設為媽閣站' : 'No LRT station near you, set default to Barra Station'}
             </div>
           )}
           <div className="space-y-3">
@@ -526,7 +513,7 @@ const Home = () => {
                    <div className="text-right">
                     {arrival.status === 'Out of Service' ? (
                       <span className="text-sm font-bold text-slate-400">
-                        {t('home_out_of_service')}
+                        {language === 'zh' ? '非營運時間' : 'Out of Service'}
                       </span>
                     ) : (
                       <>
@@ -560,16 +547,16 @@ const Home = () => {
       {/* Manual station selection */}
       <div className="px-6 pb-6">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
-          <h2 className="text-lg font-bold text-slate-800 mb-3">{t('home_select_station')}</h2>
+          <h2 className="text-lg font-bold text-slate-800 mb-3">{language==='zh'?'選擇車站':'Select Station'}</h2>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-slate-500 mb-1 block">{t('home_select_line')}</label>
+              <label className="text-xs text-slate-500 mb-1 block">{language==='zh'?'選擇路線':'Select Line'}</label>
               <select value={manualLine} onChange={(e)=>{ setManualLine(e.target.value); setManualStation(LINES[e.target.value][0]); }} className="w-full h-11 rounded-xl border border-slate-200 px-3 bg-slate-50">
                 {Object.keys(LINES).map(line => (<option key={line} value={line}>{getName(LINE_LABELS[line], language)}</option>))}
               </select>
             </div>
             <div>
-              <label className="text-xs text-slate-500 mb-1 block">{t('home_select_station')}</label>
+              <label className="text-xs text-slate-500 mb-1 block">{language==='zh'?'選擇車站':'Select Station'}</label>
               <select value={manualStation} onChange={(e)=> setManualStation(e.target.value)} className="w-full h-11 rounded-xl border border-slate-200 px-3 bg-slate-50">
                 {LINES[manualLine].map(n => {
                   const alias = { 

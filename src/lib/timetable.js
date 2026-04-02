@@ -134,6 +134,83 @@ const calculateNextArrivals = (timetable, count = 2) => {
   return results;
 };
 
+/**
+ * Get the first and last train times for a given station timetable
+ */
+const getFirstLastTimes = (timetable) => {
+  const getTimes = (schedule) => {
+    if (!schedule) return null;
+    const hours = Object.keys(schedule).map(Number).sort((a, b) => a - b);
+    if (hours.length === 0) return null;
+    
+    const firstHour = hours[0];
+    const lastHour = hours[hours.length - 1];
+    
+    const firstMin = Math.min(...schedule[firstHour]);
+    const lastMin = Math.max(...schedule[lastHour]);
+    
+    return {
+      first: `${firstHour.toString().padStart(2, '0')}:${firstMin.toString().padStart(2, '0')}`,
+      last: `${lastHour.toString().padStart(2, '0')}:${lastMin.toString().padStart(2, '0')}`
+    };
+  };
+
+  return {
+    mon_thu: getTimes(timetable.mon_thu),
+    fri: getTimes(timetable.fri),
+    weekend: getTimes(timetable.weekend)
+  };
+};
+
+/**
+ * Get service hours for all platforms of a station
+ */
+export const getStationServiceHours = (stationId) => {
+  const data = {
+    '1': [barraTimetable],
+    '2': [oceanPlatform1ToTaipaFerryTimetable, oceanPlatform2ToBarraTimetable],
+    '3': [jockeyClubPlatform1ToTaipaFerryTimetable, jockeyClubPlatform2ToBarraTimetable],
+    '4': [stadiumPlatform1ToTaipaFerryTimetable, stadiumPlatform2ToBarraTimetable],
+    '5': [paiKokPlatform1ToTaipaFerryTimetable, paiKokPlatform2ToBarraTimetable],
+    '6': [cotaiOestePlatform1ToTaipaFerryTimetable, cotaiOestePlatform2ToBarraTimetable],
+    '7': [lotusTaipaPlatform1ToTaipaFerryTimetable, lotusTaipaPlatform2ToBarraTimetable, lotusHengqinPlatform3ToHengqinTimetable],
+    '8': [hospitalTaipaPlatform1ToTaipaFerryTimetable, hospitalTaipaPlatform2ToBarraTimetable, hospitalSPVPlatform3ToSeacPaiVanTimetable],
+    '9': [eastAsianGamesPlatform1ToTaipaFerryTimetable, eastAsianGamesPlatform2ToBarraTimetable],
+    '10': [cotaiLestePlatform1ToTaipaFerryTimetable, cotaiLestePlatform2ToBarraTimetable],
+    '11': [mustPlatform1ToTaipaFerryTimetable, mustPlatform2ToBarraTimetable],
+    '12': [airportPlatform1ToTaipaFerryTimetable, airportPlatform2ToBarraTimetable],
+    '13': [taipaFerryTimetableToBarra],
+    '14': [seacPaiVanToHospitalTimetable],
+    '15': [hengqinToLotusTimetable]
+  };
+
+  const timetables = data[stationId] || [];
+  const results = timetables.map(getFirstLastTimes);
+  
+  // Aggregate to find the overall earliest and latest
+  const aggregate = (type) => {
+    let earliest = "23:59";
+    let latest = "00:00";
+    let found = false;
+
+    results.forEach(r => {
+      if (r[type]) {
+        found = true;
+        if (r[type].first < earliest) earliest = r[type].first;
+        if (r[type].last > latest) latest = r[type].last;
+      }
+    });
+
+    return found ? { first: earliest, last: latest } : null;
+  };
+
+  return {
+    mon_thu: aggregate('mon_thu'),
+    fri: aggregate('fri'),
+    weekend: aggregate('weekend')
+  };
+};
+
 
 export const lotusTaipaPlatform1ToTaipaFerryTimetable = {
   mon_thu: {
@@ -609,11 +686,11 @@ export const getNextHengqinArrivals = (count = 2) => {
 
 export const lotusHengqinPlatform3ToHengqinTimetable = {
   mon_thu: {
-    6: [33, 39, 46, 52, 59],
-    7: [5, 11, 18, 24, 31, 37, 43, 50, 56],
-    8: [3, 9, 15, 22, 28, 35, 41, 47, 54],
-    9: [0, 9, 15, 21, 27, 33, 39, 45, 51, 57],
-    10: [3, 9, 15, 21, 27, 33, 39, 45, 51, 57],
+    6: [33, 39, 46, 52, 58],
+    7: [5, 11, 18, 24, 30, 37, 43, 50, 56],
+    8: [2, 9, 15, 22, 28, 34, 41, 47, 54],
+    9: [0, 10, 16, 22, 29, 35, 41, 47, 54],
+    10: [0, 6, 12, 21, 27, 33, 39, 45, 51, 57],
     11: [3, 9, 15, 21, 27, 33, 39, 45, 51, 57],
     12: [3, 9, 15, 21, 27, 33, 39, 45, 51, 57],
     13: [3, 9, 15, 21, 27, 33, 39, 45, 51, 57],
