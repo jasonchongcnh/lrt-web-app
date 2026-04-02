@@ -73,7 +73,7 @@ const StationList = () => {
 
           <TabsContent value="map" className="mt-0 pt-6">
             <div className="rounded-3xl overflow-hidden shadow-inner">
-              <img src="/route-map.png" alt="路線圖" className="object-cover" />
+              <img src={`${import.meta.env.BASE_URL}route-map.png`} alt="路線圖" className="object-cover" />
             </div>
           </TabsContent>
         </Tabs>
