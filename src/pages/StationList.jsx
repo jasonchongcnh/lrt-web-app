@@ -57,11 +57,11 @@ const StationList = () => {
                       <div className="flex-1 p-4 flex flex-col justify-center relative">
                         <h3 className="font-bold text-lg text-slate-900 mb-1">{getName(station.name, language)}</h3>
                         <div className="flex items-center text-xs text-slate-500 mb-3">
-                           <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded mr-2 font-bold">{t('station_open')}</span>
+                           <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded mr-2 font-bold">Open</span>
                            <span>05:30 - 00:30</span>
                         </div>
                         <div className="flex items-center text-blue-600 text-xs font-bold uppercase tracking-wider">
-                           {t('home_status_details')} <ChevronRight className="w-3 h-3 ml-1" />
+                           View Details <ChevronRight className="w-3 h-3 ml-1" />
                         </div>
                       </div>
                     </div>
@@ -73,7 +73,7 @@ const StationList = () => {
 
           <TabsContent value="map" className="mt-0 pt-6">
             <div className="rounded-3xl overflow-hidden shadow-inner">
-              <img src="route-map.png" alt={t('station_tab_map')} className="object-cover" />
+              <img src={`${import.meta.env.BASE_URL}route-map.png`} alt="路線圖" className="object-cover" />
             </div>
           </TabsContent>
         </Tabs>

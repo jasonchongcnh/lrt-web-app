@@ -68,7 +68,7 @@ export const stations = [
   { 
     id: '10', 
     name: { en: 'Cotai East', zh: '路氹東站' }, 
-    image: assetUrl('Cotai-East.jpg'), 
+    image: assetUrl('Cotai-East.jpg'),
     line: { en: 'Taipa Line', zh: '氹仔線' },
     coords: { lon: 113.569149, lat: 22.148239 }
   },
@@ -93,7 +93,7 @@ export const stations = [
     line: { en: 'Taipa Line', zh: '氹仔線' },
     coords: { lon: 113.573891, lat: 22.162984 }
   },
-  // Seac Pai Van Line (L2)
+  // Seac Pai Van Line (L2) - Union Hospital already defined above
   { 
     id: '14', 
     name: { en: 'Seac Pai Van', zh: '石排灣站' }, 
@@ -101,7 +101,7 @@ export const stations = [
     line: { en: 'Seac Pai Van Line', zh: '石排灣線' },
     coords: { lon: 113.561600, lat: 22.131370 }
   },
-  // Hengqin Line (L3)
+  // Hengqin Line (L3) - Lotus already defined above
   { 
     id: '15', 
     name: { en: 'Hengqin', zh: '橫琴站' }, 

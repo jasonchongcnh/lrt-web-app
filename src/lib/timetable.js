@@ -116,7 +116,7 @@ const calculateNextArrivals = (timetable, count = 2) => {
     const minutes = schedule[currentHour];
     if (minutes) {
       for (let m of minutes) {
-        if (currentHour > hour || m > minute) {
+        if (currentHour > hour || m >= minute) {
           const diff = (currentHour - hour) * 60 + (m - minute);
           results.push(diff);
           if (results.length === count) break;

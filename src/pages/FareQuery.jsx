@@ -57,7 +57,7 @@ const FareQuery = () => {
 
           <TabsContent value="query" className="mt-6 space-y-6">
              <div className="space-y-3">
-               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">{t('fare_type')}</label>
+               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">{t('route_fare_type')}</label>
                <div className="grid grid-cols-1 gap-3">
                  {[
                    { id:'single', label: t('fare_type_single') },
@@ -77,19 +77,18 @@ const FareQuery = () => {
 
              <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl mt-2">
                <div className="flex justify-between items-center mb-6">
-                 <span className="text-slate-400 text-sm">{t('fare_tiered')}</span>
+                 <span className="text-slate-400 text-sm">{t('fare_tiered_fares')}</span>
                </div>
                <div className="space-y-4">
                   {bands.map((b, idx)=>(
                     <div className="flex justify-between text-sm" key={idx}>
-                      <span className="text-slate-300">{t('fare_band_stops').replace('{count}', b.max)}</span>
+                      <span className="text-slate-300">{t('fare_stops_count').replace('{max}', b.max)}</span>
                       <span className="font-semibold">{`MOP ${priceFor(b).toFixed((priceFor(b)%1)?1:0)}`}</span>
                     </div>
                   ))}
                </div>
-               <div className="mt-4 text-xs text-slate-400 space-y-1">
-                 <p>{t('fare_rules_1')}</p>
-                 <p>{t('fare_rules_2')}</p>
+               <div className="mt-4 text-xs text-slate-400">
+                 {t('route_fare_rules')}
               </div>
              </div>
           </TabsContent>

@@ -32,9 +32,9 @@ const RoutePlanning = () => {
     return s ? getName(s.name, language) : id;
   };
   const lineName = (key) => {
-    if (key==='Taipa') return language==='zh'?'氹仔線':'Taipa Line';
-    if (key==='SeacPaiVan') return language==='zh'?'石排灣線':'Seac Pai Van Line';
-    if (key==='Hengqin') return language==='zh'?'橫琴線':'Hengqin Line';
+    if (key==='Taipa') return t('line_taipa');
+    if (key==='SeacPaiVan') return t('line_seacpaivan');
+    if (key==='Hengqin') return t('line_hengqin');
     return key;
   };
 
@@ -72,9 +72,9 @@ const RoutePlanning = () => {
   };
 
   const edgeLine = (a,b) => {
-    if (isAdjacentOn('Taipa', a, b)) return language==='zh'?'氹仔線':'Taipa Line';
-    if (isAdjacentOn('SeacPaiVan', a, b)) return language==='zh'?'石排灣線':'Seac Pai Van Line';
-    if (isAdjacentOn('Hengqin', a, b)) return language==='zh'?'橫琴線':'Hengqin Line';
+    if (isAdjacentOn('Taipa', a, b)) return t('line_taipa');
+    if (isAdjacentOn('SeacPaiVan', a, b)) return t('line_seacpaivan');
+    if (isAdjacentOn('Hengqin', a, b)) return t('line_hengqin');
     return '';
   };
 
@@ -114,6 +114,22 @@ const RoutePlanning = () => {
     return stops;
   };
 
+  const calculateTravelTime = (path) => {
+    if (!path || path.length < 2) return 0;
+    let time = 0;
+    for (let i = 0; i < path.length - 1; i++) {
+      const a = path[i];
+      const b = path[i+1];
+      // Barra (1) <-> Ocean (2) is 5 minutes
+      if ((a === '1' && b === '2') || (a === '2' && b === '1')) {
+        time += 5;
+      } else {
+        time += 2;
+      }
+    }
+    return time;
+  };
+
   const bands = [
     { max: 3, single: 6, stored: 3, student: 1.5 },
     { max: 6, single: 8, stored: 4, student: 2 },
@@ -126,7 +142,8 @@ const RoutePlanning = () => {
     if (!p) return null;
     return {
       path: p,
-      legs: pathToSegments(p)
+      legs: pathToSegments(p),
+      time: calculateTravelTime(p)
     };
   }, [fromStation, toStation, language]);
 
@@ -148,7 +165,7 @@ const RoutePlanning = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 md:col-span-1">
-              <label className="text-xs text-slate-500 mb-1 block">{t('route_from')}</label>
+              <label className="text-xs text-slate-500 mb-1 block">{t('route_from_station')}</label>
               <div className="mb-2">
                 <select value={fromLine} onChange={(e)=>{ 
                   const key = e.target.value; 
@@ -167,7 +184,7 @@ const RoutePlanning = () => {
               </select>
             </div>
             <div className="col-span-2 md:col-span-1">
-              <label className="text-xs text-slate-700 mb-1 block">{t('route_to')}</label>
+              <label className="text-xs text-slate-700 mb-1 block">{t('route_to_station')}</label>
               <div className="mb-2">
                 <select value={toLine} onChange={(e)=>{ 
                   const key = e.target.value; 
@@ -188,7 +205,7 @@ const RoutePlanning = () => {
           </div>
           <div className="grid grid-cols-1">
             <div className="col-span-1">
-              <label className="text-xs text-slate-700 mb-1 block">{t('fare_type')}</label>
+              <label className="text-xs text-slate-700 mb-1 block">{t('route_fare_type')}</label>
               <select value={fareType} onChange={(e)=>setFareType(e.target.value)} className="w-full h-12 rounded-xl border border-slate-200 px-3 bg-slate-50">
                 <option value="single">{t('fare_type_single')}</option>
                 <option value="stored">{t('fare_type_stored')}</option>
@@ -204,25 +221,52 @@ const RoutePlanning = () => {
                 <span className="text-2xl font-bold">{typeof result.price==='number'?`MOP ${result.price.toFixed((result.price%1)?1:0)}`:'—'}</span>
               </div>
               <div className="flex justify-between text-sm mb-4">
-                <span className="text-slate-400">{language==='zh'?'站數':'Stops'}</span>
-                <span>{result.stops}</span>
+                <span className="text-slate-400">{t('route_estimated_time')}</span>
+                <span className="font-medium text-lg">{route.time} {t('home_min')}</span>
               </div>
               <div className="space-y-4">
-                {route.legs.map((leg, idx) => (
-                  <div key={idx} className="bg-white/5 rounded-2xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">{leg.line}</span>
-                      <span className="text-xs text-slate-300">{t('route_ride_stops').replace('{count}', leg.stops)}</span>
-                    </div>
-                    <div className="text-sm">
-                      <div>{nameById(leg.from)} → {nameById(leg.to)}</div>
-                    </div>
-                  </div>
-                ))}
+                {route.legs.map((leg, idx) => {
+                  const isTransfer = idx > 0;
+                  const transferStationId = isTransfer ? route.legs[idx-1].to : null;
+                  let transferDistance = null;
+                  if (transferStationId === '7') transferDistance = t('route_transfer_distance_lotus');
+                  if (transferStationId === '8') transferDistance = t('route_transfer_distance_uh');
+
+                  return (
+                    <React.Fragment key={idx}>
+                      {isTransfer && transferDistance && (
+                        <div className="flex items-center justify-center my-2 text-xs text-blue-300 bg-blue-900/30 rounded-lg py-2 border border-blue-800/50">
+                          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                          </svg>
+                          {t('route_transfer_walk')}: {transferDistance}
+                        </div>
+                      )}
+                      <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center">
+                            <div className="w-2 h-2 rounded-full bg-blue-400 mr-2"></div>
+                            <span className="text-sm font-bold text-blue-100">{leg.line}</span>
+                          </div>
+                          <span className="text-xs text-slate-300 bg-white/10 px-2 py-1 rounded-md">{t('route_ride_action')} · {leg.stops} {t('route_stops')}</span>
+                        </div>
+                        <div className="flex flex-col text-sm space-y-2">
+                          <div className="flex items-center text-slate-200">
+                            <div className="w-6 text-center text-slate-500 mr-2 text-xs font-bold">O</div>
+                            {nameById(leg.from)}
+                          </div>
+                          <div className="flex items-center text-slate-200">
+                            <div className="w-6 text-center text-slate-500 mr-2 text-xs font-bold">O</div>
+                            {nameById(leg.to)}
+                          </div>
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  );
+                })}
               </div>
-              <div className="mt-4 text-xs text-slate-400 space-y-1">
-                <p>{t('fare_rules_1')}</p>
-                <p>{t('fare_rules_2')}</p>
+              <div className="mt-4 text-xs text-slate-400">
+                {t('route_fare_rules')}
               </div>
             </div>
           )}

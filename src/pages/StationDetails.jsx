@@ -148,24 +148,6 @@ const StationDetails = () => {
     return [];
   })();
 
-  const surroundings = {
-    '1': { url: "https://mlm.com.mo/images/stations/station_2024/station_ST12.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '2': { url: "https://mlm.com.mo/images/stations/station_2023/ST13.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '3': { url: "https://mlm.com.mo/images/stations/station_2023/ST14.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '4': { url: "https://mlm.com.mo/images/stations/station_2023/ST15.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '5': { url: "https://mlm.com.mo/images/stations/station_2023/ST16.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '6': { url: "https://mlm.com.mo/images/stations/station_2023/ST17.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '7': { url: "https://mlm.com.mo/images/stations/station_2024/Station_2024_DEC/Lotus_HQ_station.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '8': { url: "https://mlm.com.mo/images/stations/station_2024/station_st18A.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '9': { url: "https://mlm.com.mo/images/stations/station_2023/ST19.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '10': { url: "https://mlm.com.mo/images/stations/station_2023/ST20.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '11': { url: "https://mlm.com.mo/images/stations/station_2023/ST21.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '12': { url: "https://mlm.com.mo/images/stations/station_2023/ST22.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '13': { url: "https://mlm.com.mo/images/stations/station_2023/ST23.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '14': { url: "https://mlm.com.mo/images/stations/station_2024/station_st18B.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-    '15': { url: "https://mlm.com.mo/images/stations/station_2024/STHQ.png", title: `${getName(station.name, language)} ${t('station_street_map')}` },
-  };
-
   return (
     <div className="bg-white min-h-screen pb-20 relative">
       {/* Header Image Area */}
@@ -184,22 +166,6 @@ const StationDetails = () => {
           }}>
             <ArrowLeft className="w-6 h-6" />
           </Button>
-          <div className="flex space-x-2">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 rounded-full" onClick={(e) => e.stopPropagation()}>
-              <Share2 className="w-5 h-5" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className={cn("text-white hover:bg-white/20 rounded-full", isFavorite && "text-yellow-400")}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsFavorite(!isFavorite);
-              }}
-            >
-              <Star className={cn("w-6 h-6", isFavorite && "fill-current")} />
-            </Button>
-          </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-10">
           <div className="flex items-end justify-between">
@@ -211,7 +177,7 @@ const StationDetails = () => {
             </div>
             <div className="text-white/60 flex items-center text-[10px] font-medium bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
               <ZoomIn className="w-3 h-3 mr-1" />
-              {t('station_click_zoom')}
+              {t('station_click_to_zoom')}
             </div>
           </div>
         </div>
@@ -239,6 +205,28 @@ const StationDetails = () => {
                       <div>
                         {(!entry.times || entry.times.length === 0) ? (
                           <span className="text-sm font-bold text-slate-400">{t('station_out_of_service')}</span>
+                        ) : entry.times[0] === 0 ? (
+                          <div>
+                            <span className="text-lg font-bold text-blue-600">{t('station_arrived')}</span>
+                            {entry.times.length > 1 && (
+                              <div className="flex items-center mt-1 space-x-2">
+                                <span className="text-xs text-slate-400">
+                                  {t('station_next')}: {entry.times[1] ?? '-'} {t('home_min')}{entry.times[2] ? `, ${entry.times[2]} ${t('home_min')}` : ''}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ) : entry.times[0] === 1 ? (
+                          <div>
+                            <span className="text-lg font-bold text-blue-600">{t('station_arriving_soon')}</span>
+                            {entry.times.length > 1 && (
+                              <div className="flex items-center mt-1 space-x-2">
+                                <span className="text-xs text-slate-400">
+                                  {t('station_next')}: {entry.times[1] ?? '-'} {t('home_min')}{entry.times[2] ? `, ${entry.times[2]} ${t('home_min')}` : ''}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         ) : (
                           <>
                             <div className="flex items-baseline space-x-1">
@@ -247,7 +235,7 @@ const StationDetails = () => {
                             </div>
                             <div className="flex items-center mt-1 space-x-2">
                               <span className="text-xs text-slate-400">
-                                {t('station_next')}: {entry.times[1] ?? '-'} {t('home_min')}, {entry.times[2] ?? '-'} {t('home_min')}
+                                {t('station_next')}: {entry.times[1] ?? '-'} {t('home_min')}{entry.times[2] ? `, ${entry.times[2]} ${t('home_min')}` : ''}
                               </span>
                             </div>
                           </>
@@ -271,7 +259,7 @@ const StationDetails = () => {
             )) : (
               <div className="text-center py-10 text-slate-400">
                 <Info className="w-10 h-10 mx-auto mb-2 opacity-20" />
-                <p>{language === 'zh' ? '暫無班次資訊' : 'No arrival info'}</p>
+                <p>{t('station_no_arrival_info')}</p>
               </div>
             )}
           </TabsContent>
@@ -284,21 +272,21 @@ const StationDetails = () => {
                       <h4 className="font-bold text-slate-900 mb-2">{t('station_operating_hours')}</h4>
                       <div className="grid grid-cols-1 gap-3">
                         <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
-                          <p className="text-xs font-bold text-blue-600 mb-1">{language === 'zh' ? '星期一至四' : 'Mon - Thu'}</p>
+                          <p className="text-xs font-bold text-blue-600 mb-1">{t('station_mon_thu')}</p>
                           <div className="flex justify-between text-sm text-slate-600">
                             <span>{t('station_first_train')}: {serviceHours.mon_thu?.first || '--:--'}</span>
                             <span>{t('station_last_train')}: {serviceHours.mon_thu?.last || '--:--'}</span>
                           </div>
                         </div>
                         <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
-                          <p className="text-xs font-bold text-blue-600 mb-1">{language === 'zh' ? '星期五' : 'Friday'}</p>
+                          <p className="text-xs font-bold text-blue-600 mb-1">{t('station_fri')}</p>
                           <div className="flex justify-between text-sm text-slate-600">
                             <span>{t('station_first_train')}: {serviceHours.fri?.first || '--:--'}</span>
                             <span>{t('station_last_train')}: {serviceHours.fri?.last || '--:--'}</span>
                           </div>
                         </div>
                         <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
-                          <p className="text-xs font-bold text-blue-600 mb-1">{language === 'zh' ? '星期六、日及公眾假期' : 'Weekend & Holidays'}</p>
+                          <p className="text-xs font-bold text-blue-600 mb-1">{t('station_weekend')}</p>
                           <div className="flex justify-between text-sm text-slate-600">
                             <span>{t('station_first_train')}: {serviceHours.weekend?.first || '--:--'}</span>
                             <span>{t('station_last_train')}: {serviceHours.weekend?.last || '--:--'}</span>
@@ -331,18 +319,45 @@ const StationDetails = () => {
                      {t('station_surroundings')}
                    </h4>
                    
+                   {/* Image interface */}
                    <div className="space-y-4">
-                      {surroundings[id] ? (
+                      {id === '1' ? (
                         <div 
                           className="w-auto bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
                           onClick={() => setActiveImage({
-                            url: surroundings[id].url,
-                            title: surroundings[id].title
+                            url: "https://mlm.com.mo/images/stations/station_2024/station_ST12.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
                           })}
                         >
                            <img 
-                             src={surroundings[id].url} 
-                             alt={surroundings[id].title} 
+                             src="https://mlm.com.mo/images/stations/station_2024/station_ST12.png" 
+                             alt="Barra Station Street Map" 
+                             className="w-auto h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '2' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2023/ST13.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2023/ST13.png" 
+                             alt="Ocean Station Street Map" 
                              className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
                            />
                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
@@ -350,19 +365,357 @@ const StationDetails = () => {
                            </div>
                            <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
                               <p className="text-xs text-slate-500 font-medium">
-                                {surroundings[id].title}
+                                {getName(station.name, language)} {t('station_street_map')}
                               </p>
                               <span className="text-[10px] text-blue-500 font-bold flex items-center">
                                 <ZoomIn className="w-3 h-3 mr-1" />
-                                {t('station_click_zoom')}
+                                {t('station_click_to_zoom')}
                               </span>
                            </div>
                         </div>
-                      ) : (
+                      ) : id === '3' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2023/ST14.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })} 
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2023/ST14.png" 
+                             alt="Jockey Club Station Street Map" 
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '4' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2023/ST15.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2023/ST15.png" 
+                             alt="Stadium Station Street Map" 
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '5' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2023/ST16.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2023/ST16.png" 
+                             alt="Pai Kok Station Street Map" 
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '6' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2023/ST17.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2023/ST17.png" 
+                             alt="Cotai West Station Street Map" 
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '7' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2024/Station_2024_DEC/Lotus_HQ_station.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2024/Station_2024_DEC/Lotus_HQ_station.png" 
+                             alt="Lotus Station Street Map" 
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      )  : id === '8' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2024/station_st18A.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2024/station_st18A.png" 
+                             alt="Union Hospital Station Street Map" 
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '9' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2023/ST19.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2023/ST19.png" 
+                             alt="East Asia Games Station Street Map" 
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '10' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2023/ST20.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2023/ST20.png" 
+                             alt="Cotai East Station Street Map" 
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '11' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2023/ST21.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2023/ST21.png" 
+                             alt="MUST Station Street Map" 
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '12' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2023/ST22.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2023/ST22.png" 
+                             alt="Airport Station Street Map"
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '13' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2023/ST23.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2023/ST23.png" 
+                             alt="Tapia Ferry Terminal Station Street Map"
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '14' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2024/station_st18B.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2024/station_st18B.png" 
+                             alt="Seac Pai Van Station Street Map"
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ) : id === '15' ? (
+                        <div 
+                          className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
+                          onClick={() => setActiveImage({
+                            url: "https://mlm.com.mo/images/stations/station_2024/STHQ.png",
+                            title: `${getName(station.name, language)} ${t('station_street_map')}`
+                          })}
+                        >
+                           <img 
+                             src="https://mlm.com.mo/images/stations/station_2024/STHQ.png" 
+                             alt="Hengqin Station Street Map"
+                             className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                           />
+                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                              <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-md" />
+                           </div>
+                           <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                              <p className="text-xs text-slate-500 font-medium">
+                                {getName(station.name, language)} {t('station_street_map')}
+                              </p>
+                              <span className="text-[10px] text-blue-500 font-bold flex items-center">
+                                <ZoomIn className="w-3 h-3 mr-1" />
+                                {t('station_click_to_zoom')}
+                              </span>
+                           </div>
+                        </div>
+                      ): (
                         <div className="aspect-video bg-slate-200 rounded-xl overflow-hidden flex items-center justify-center relative group border-2 border-dashed border-slate-300">
                            <div className="text-center p-6">
                               <Share2 className="w-8 h-8 mx-auto mb-2 text-slate-400 opacity-50" />
-                              <p className="text-xs text-slate-500">{t('station_placeholder_img')}</p>
+                              <p className="text-xs text-slate-500">{t('station_placeholder_map')}</p>
                            </div>
                         </div>
                       )}
@@ -405,13 +758,13 @@ const StationDetails = () => {
           <div className="mt-6 text-center text-white space-y-2 animate-in slide-in-from-bottom-4 duration-500">
             <h3 className="text-xl font-bold">{activeImage.title}</h3>
             <p className="text-sm text-white/60">
-              {t('station_zoom_close')}
+              {t('station_click_bg_close')}
             </p>
           </div>
         </div>
       )}
 
-      {/* Reminder Bottom Sheet */}
+      {/* Reminder Bottom Sheet Mock */}
       {showReminder && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
            <div className="bg-white w-full max-w-md rounded-t-2xl p-6 space-y-6 animate-in slide-in-from-bottom duration-300">

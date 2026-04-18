@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Clock, MapPin, ChevronRight, Bell, AlertTriangle, Star } from 'lucide-react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { stations, arrivals, announcements } from '../lib/data';
@@ -24,6 +26,13 @@ import {
   getNextLotusHengqinArrivals,
   getNextHengqinArrivals
 } from '../lib/timetable';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
+  iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
+  shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
+});
 
 const Home = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -70,21 +79,21 @@ const Home = () => {
   };
 
   const initMap = (lat, lon, accuracy) => {
-    if (window.L && mapRef.current && !mapInstance.current) {
+    if (mapRef.current && !mapInstance.current) {
       // Initialize Leaflet map
-      mapInstance.current = window.L.map(mapRef.current).setView([lat, lon], 15);
+      mapInstance.current = L.map(mapRef.current).setView([lat, lon], 15);
       
       // Add OpenStreetMap tiles
-      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(mapInstance.current);
 
       // Add user marker
-      userMarkerRef.current = window.L.marker([lat, lon]).addTo(mapInstance.current)
+      userMarkerRef.current = L.marker([lat, lon]).addTo(mapInstance.current)
         .bindPopup(t('home_your_location'));
 
       if (accuracy) {
-        accuracyCircleRef.current = window.L.circle([lat, lon], {
+        accuracyCircleRef.current = L.circle([lat, lon], {
           radius: accuracy,
           color: '#38bdf8',
           fillColor: '#38bdf8',
@@ -96,7 +105,7 @@ const Home = () => {
       // Add station markers
       stations.forEach(s => {
         if (s.coords) {
-          const marker = window.L.circleMarker([s.coords.lat, s.coords.lon], {
+          const marker = L.circleMarker([s.coords.lat, s.coords.lon], {
             radius: 8,
             fillColor: "#3b82f6",
             color: "#ffffff",
@@ -120,14 +129,13 @@ const Home = () => {
       mapInstance.current.setView([lat, lon]);
       if (userMarkerRef.current) {
         userMarkerRef.current.setLatLng([lat, lon]);
-        userMarkerRef.current.getPopup()?.setContent(t('home_your_location'));
       }
       if (accuracy) {
         if (accuracyCircleRef.current) {
           accuracyCircleRef.current.setLatLng([lat, lon]);
           accuracyCircleRef.current.setRadius(accuracy);
         } else {
-          accuracyCircleRef.current = window.L.circle([lat, lon], {
+          accuracyCircleRef.current = L.circle([lat, lon], {
             radius: accuracy,
             color: '#38bdf8',
             fillColor: '#38bdf8',
@@ -404,16 +412,19 @@ const Home = () => {
         const key = `${nearbyStation.id}-${idx}-${mins}`;
         if (!imminentRef.current[key]) {
           imminentRef.current[key] = true;
-          const title = t('home_train_arriving_soon');
-          const body = t('home_train_to').replace('{direction}', getName(a.direction, language));
+          const title = t('reminder_train_arriving_title');
+          const body = t('reminder_train_arriving_body')
+            .replace('{station}', getName(nearbyStation.name, language))
+            .replace('{direction}', getName(a.direction, language));
+            
           if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            try { new Notification(title, { body, tag: 'arrival-imminent' }); } catch {}
+            try { new Notification(title, { body: body, tag: 'arrival-imminent' }); } catch {}
           }
           alert(body);
         }
       }
     });
-  }, [currentArrivals, nearbyStation, language]);
+  }, [currentArrivals, nearbyStation, language, t]);
 
   return (
     <div className="pb-6 space-y-6">
@@ -497,7 +508,7 @@ const Home = () => {
 
           {noNearby && (
             <div className="mb-3 text-xs text-yellow-100 bg-yellow-500/20 border border-yellow-300/40 rounded p-2">
-              {t('home_no_nearby_barra')}
+              {t('home_no_lrt_near')}
             </div>
           )}
           <div className="space-y-3">
@@ -515,6 +526,10 @@ const Home = () => {
                       <span className="text-sm font-bold text-slate-400">
                         {t('station_out_of_service')}
                       </span>
+                    ) : arrival.times[0] === 0 ? (
+                      <span className="text-base font-bold text-blue-600">{t('station_arrived')}</span>
+                    ) : arrival.times[0] === 1 ? (
+                      <span className="text-base font-bold text-blue-600">{t('station_arriving_soon')}</span>
                     ) : (
                       <>
                         <span className="text-xl font-bold text-blue-600">{arrival.times[0]}</span>
@@ -530,7 +545,11 @@ const Home = () => {
                       onClick={() => {
                         toggleReminder(`${arrival.stationId}-${idx}`);
                         if (!reminders[`${arrival.stationId}-${idx}`]) {
-                          alert(`${t('reminder_title')}: ${getName(nearbyStation.name, language)} ${t('home_to')} ${getName(arrival.direction, language)} - ${arrival.times[0]} ${t('home_min')}`);
+                          const alertMsg = t('reminder_set_alert')
+                            .replace('{station}', getName(nearbyStation.name, language))
+                            .replace('{direction}', getName(arrival.direction, language))
+                            .replace('{min}', arrival.times[0]);
+                          alert(alertMsg);
                         }
                       }}
                     >
@@ -565,7 +584,7 @@ const Home = () => {
                   };
                   const target = alias[n] || n;
                   const sObj = stations.find(s => s.name.en === target || s.name.zh === target);
-                  const label = sObj ? getName(sObj.name, language) : n;
+                  const label = sObj ? getName(sObj.name, language) : (language==='zh'? n : n);
                   return (<option key={n} value={n}>{label}</option>);
                 })}
               </select>
