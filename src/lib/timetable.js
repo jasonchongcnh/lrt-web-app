@@ -97,12 +97,20 @@ const calculateNextArrivals = (timetable, count = 2) => {
   const localOffset = now.getTimezoneOffset();
   const gmt8Time = new Date(now.getTime() + (gmt8Offset + localOffset) * 60000);
   
-  const day = gmt8Time.getDay();
-  const hour = gmt8Time.getHours();
+  let day = gmt8Time.getDay();
+  let hour = gmt8Time.getHours();
   const minute = gmt8Time.getMinutes();
   
+  // Logical day adjustment: times between 00:00 and 03:59 belong to the previous day's schedule
+  const logicalTime = new Date(gmt8Time);
+  if (hour < 4) {
+    day = day === 0 ? 6 : day - 1;
+    hour += 24;
+    logicalTime.setDate(logicalTime.getDate() - 1);
+  }
+  
   let schedule;
-  if (isPublicHoliday(gmt8Time) || day === 0 || day === 6) {
+  if (isPublicHoliday(logicalTime) || day === 0 || day === 6) {
     schedule = timetable.weekend;
   } else if (day === 5) {
     schedule = timetable.fri;
@@ -112,7 +120,7 @@ const calculateNextArrivals = (timetable, count = 2) => {
   
   const results = [];
   let currentHour = hour;
-  while (results.length < count && currentHour <= 23) {
+  while (results.length < count && currentHour <= 28) {
     const minutes = schedule[currentHour];
     if (minutes) {
       for (let m of minutes) {
