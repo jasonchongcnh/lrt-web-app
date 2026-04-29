@@ -474,7 +474,7 @@ const Home = () => {
           <div className="flex-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Logo" className="w-12 h-12 rounded-full shadow-sm bg-white p-0.5 object-cover" />
+                <img src={`${import.meta.env.BASE_URL}logo.png?v=2`} alt="Logo" className="w-12 h-12 rounded-full shadow-sm bg-white p-0.5 object-cover" />
                 <div>
                   <h1 className="text-2xl font-bold">{t('app_name')}</h1>
                   <p className="text-blue-100 text-sm mt-1">{t('welcome_message')}</p>
