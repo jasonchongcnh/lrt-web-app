@@ -4,13 +4,16 @@ import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
-import { stations } from '../lib/data';
+import { stations, REMOTE_BASE } from '../lib/data';
 import { getName } from '../lib/utils';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useImage } from '../contexts/ImageContext';
 import { Link } from 'react-router-dom';
+import { ZoomIn } from 'lucide-react';
 
 const StationList = () => {
   const { t, language } = useLanguage();
+  const { showImage } = useImage();
   const [searchTerm, setSearchTerm] = useState('');
   
   const filteredStations = stations.filter(s => 
@@ -45,35 +48,47 @@ const StationList = () => {
           <TabsContent value="list" className="mt-0 pt-6">
             <div className="space-y-4">
               {filteredStations.map((station) => (
-                <Link to={`/station/${station.id}`} key={station.id} className="block">
-                  <Card className="border-none shadow-sm hover:shadow-md transition-shadow rounded-2xl overflow-hidden">
-                    <div className="flex h-28">
-                      <div className="w-32 relative">
-                        <img src={station.image} alt={getName(station.name, language)} className="w-full h-full object-cover" />
-                        <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase">
-                           {getName(station.line, language)}
+                <div key={station.id} className="relative">
+                  <Link to={`/station/${station.id}`} className="block">
+                    <Card className="border-none shadow-sm hover:shadow-md transition-shadow rounded-2xl overflow-hidden">
+                      <div className="flex h-28">
+                        <div className="w-32 relative group cursor-pointer" onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          showImage(station.image, getName(station.name, language));
+                        }}>
+                          <img src={station.image} alt={getName(station.name, language)} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <ZoomIn className="text-white w-6 h-6" />
+                          </div>
+                          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase">
+                            {getName(station.line, language)}
+                          </div>
+                        </div>
+                        <div className="flex-1 p-4 flex flex-col justify-center relative">
+                          <h3 className="font-bold text-lg text-slate-900 mb-1">{getName(station.name, language)}</h3>
+                          <div className="flex items-center text-xs text-slate-500 mb-3">
+                            <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded mr-2 font-bold">Open</span>
+                            <span>05:30 - 00:30</span>
+                          </div>
+                          <div className="flex items-center text-blue-600 text-xs font-bold uppercase tracking-wider">
+                            View Details <ChevronRight className="w-3 h-3 ml-1" />
+                          </div>
                         </div>
                       </div>
-                      <div className="flex-1 p-4 flex flex-col justify-center relative">
-                        <h3 className="font-bold text-lg text-slate-900 mb-1">{getName(station.name, language)}</h3>
-                        <div className="flex items-center text-xs text-slate-500 mb-3">
-                           <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded mr-2 font-bold">Open</span>
-                           <span>05:30 - 00:30</span>
-                        </div>
-                        <div className="flex items-center text-blue-600 text-xs font-bold uppercase tracking-wider">
-                           View Details <ChevronRight className="w-3 h-3 ml-1" />
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
+                    </Card>
+                  </Link>
+                </div>
               ))}
             </div>
           </TabsContent>
 
           <TabsContent value="map" className="mt-0 pt-6">
-            <div className="rounded-3xl overflow-hidden shadow-inner">
-              <img src={`${import.meta.env.BASE_URL}route-map.png`} alt="路線圖" className="object-cover" />
+            <div className="rounded-3xl overflow-hidden shadow-inner cursor-pointer group relative" onClick={() => showImage(`${REMOTE_BASE}route-map.png`, t('station_tab_map'))}>
+              <img src={`${REMOTE_BASE}route-map.png`} alt="路線圖" className="object-cover transition-transform duration-300 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <ZoomIn className="text-white w-10 h-10 drop-shadow-md" />
+              </div>
             </div>
           </TabsContent>
         </Tabs>

@@ -28,16 +28,17 @@ import {
 } from '../lib/timetable';
 import { cn, getName } from '../lib/utils';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useImage } from '../contexts/ImageContext';
 
 const StationDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { showImage } = useImage();
   
   const station = stations.find(s => s.id === id) || stations[0];
   const [isFavorite, setIsFavorite] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
-  const [activeImage, setActiveImage] = useState(null);
 
   const serviceHours = getStationServiceHours(id);
 
@@ -151,10 +152,10 @@ const StationDetails = () => {
   return (
     <div className="bg-white min-h-screen pb-20 relative">
       {/* Header Image Area */}
-      <div className="relative h-56 w-full group cursor-pointer overflow-hidden" onClick={() => setActiveImage({
-        url: station.image,
-        title: getName(station.name, language)
-      })}>
+      <div className="relative h-56 w-full group cursor-pointer overflow-hidden" onClick={() => showImage(
+        station.image,
+        getName(station.name, language)
+      )}>
         <img src={station.image} alt={getName(station.name, language)} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
           <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-lg" />
@@ -324,10 +325,10 @@ const StationDetails = () => {
                       {id === '1' ? (
                         <div 
                           className="w-auto bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2024/station_ST12.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2024/station_ST12.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2024/station_ST12.png" 
@@ -350,10 +351,10 @@ const StationDetails = () => {
                       ) : id === '2' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST13.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2023/ST13.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2023/ST13.png" 
@@ -376,10 +377,10 @@ const StationDetails = () => {
                       ) : id === '3' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST14.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })} 
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2023/ST14.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2023/ST14.png" 
@@ -402,10 +403,10 @@ const StationDetails = () => {
                       ) : id === '4' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST15.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2023/ST15.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2023/ST15.png" 
@@ -428,10 +429,10 @@ const StationDetails = () => {
                       ) : id === '5' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST16.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2023/ST16.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2023/ST16.png" 
@@ -454,10 +455,10 @@ const StationDetails = () => {
                       ) : id === '6' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST17.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2023/ST17.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2023/ST17.png" 
@@ -480,10 +481,10 @@ const StationDetails = () => {
                       ) : id === '7' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2024/Station_2024_DEC/Lotus_HQ_station.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2024/Station_2024_DEC/Lotus_HQ_station.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2024/Station_2024_DEC/Lotus_HQ_station.png" 
@@ -506,10 +507,10 @@ const StationDetails = () => {
                       )  : id === '8' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2024/station_st18A.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2024/station_st18A.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2024/station_st18A.png" 
@@ -532,10 +533,10 @@ const StationDetails = () => {
                       ) : id === '9' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST19.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2023/ST19.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2023/ST19.png" 
@@ -558,10 +559,10 @@ const StationDetails = () => {
                       ) : id === '10' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST20.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2023/ST20.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2023/ST20.png" 
@@ -584,10 +585,10 @@ const StationDetails = () => {
                       ) : id === '11' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST21.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2023/ST21.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2023/ST21.png" 
@@ -610,10 +611,10 @@ const StationDetails = () => {
                       ) : id === '12' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST22.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2023/ST22.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2023/ST22.png" 
@@ -636,10 +637,10 @@ const StationDetails = () => {
                       ) : id === '13' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2023/ST23.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2023/ST23.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2023/ST23.png" 
@@ -662,10 +663,10 @@ const StationDetails = () => {
                       ) : id === '14' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2024/station_st18B.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2024/station_st18B.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2024/station_st18B.png" 
@@ -688,10 +689,10 @@ const StationDetails = () => {
                       ) : id === '15' ? (
                         <div 
                           className="w-full bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 cursor-pointer group relative"
-                          onClick={() => setActiveImage({
-                            url: "https://mlm.com.mo/images/stations/station_2024/STHQ.png",
-                            title: `${getName(station.name, language)} ${t('station_street_map')}`
-                          })}
+                          onClick={() => showImage(
+                            "https://mlm.com.mo/images/stations/station_2024/STHQ.png",
+                            `${getName(station.name, language)} ${t('station_street_map')}`
+                          )}
                         >
                            <img 
                              src="https://mlm.com.mo/images/stations/station_2024/STHQ.png" 
@@ -726,43 +727,6 @@ const StationDetails = () => {
         </Tabs>
       </div>
 
-      {/* Lightbox Overlay */}
-      {activeImage && (
-        <div 
-          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-300"
-          onClick={() => setActiveImage(null)}
-        >
-          <div className="absolute top-10 right-6 flex space-x-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-white hover:bg-white/20 rounded-full h-12 w-12"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveImage(null);
-              }}
-            >
-              <X className="w-8 h-8" />
-            </Button>
-          </div>
-          
-          <div className="w-full max-w-4xl max-h-[80vh] relative group flex items-center justify-center">
-            <img 
-              src={activeImage.url} 
-              alt={activeImage.title} 
-              className="max-w-full max-h-full object-contain rounded-sm shadow-2xl animate-in zoom-in-95 duration-300"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-          
-          <div className="mt-6 text-center text-white space-y-2 animate-in slide-in-from-bottom-4 duration-500">
-            <h3 className="text-xl font-bold">{activeImage.title}</h3>
-            <p className="text-sm text-white/60">
-              {t('station_click_bg_close')}
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Reminder Bottom Sheet Mock */}
       {showReminder && (

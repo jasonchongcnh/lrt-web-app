@@ -44,7 +44,7 @@ export const translations = {
     station_restroom: "Restroom",
     station_atm: "ATM",
     station_map_unavailable: "Map view not available in prototype",
-    station_out_of_service: "Out of Service",
+    station_out_of_service: "Out of service",
     station_no_arrival_info: "No arrival info",
     station_mon_thu: "Mon - Thu",
     station_fri: "Friday",
@@ -54,6 +54,7 @@ export const translations = {
     station_street_map: "Street Map",
     station_placeholder_map: "Placeholder for surrounding map / scenery",
     station_click_bg_close: "Click background or top-right to close",
+    station_zoom_instructions: "Pinch to zoom, drag to pan",
     station_arriving_soon: "Arriving Soon",
     station_arrived: "Arrived",
     
@@ -228,6 +229,7 @@ export const translations = {
     station_street_map: "街道圖",
     station_placeholder_map: "周邊地圖 / 景點圖片預留位",
     station_click_bg_close: "點擊背景或按右上角關閉",
+    station_zoom_instructions: "雙指縮放，拖動平移",
     station_arriving_soon: "即將到站",
     station_arrived: "已到站",
     

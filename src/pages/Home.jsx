@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { stations, arrivals, announcements } from '../lib/data';
 import { cn, getName } from '../lib/utils';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useImage } from '../contexts/ImageContext';
 import { 
   getNextBarraArrivals, 
   getNextOceanArrivals, 
@@ -27,6 +28,7 @@ import {
 
 const Home = () => {
   const { t, language, setLanguage } = useLanguage();
+  const { showImage } = useImage();
   const [reminders, setReminders] = useState({});
   const [barraTimes, setBarraTimes] = useState([]);
   const [notifyScheduledFor, setNotifyScheduledFor] = useState(null);
@@ -79,8 +81,25 @@ const Home = () => {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(mapInstance.current);
 
+      // Custom SVG Icons
+      const userIcon = window.L.divIcon({
+        className: 'bg-transparent',
+        html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3b82f6" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 drop-shadow-md" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3" fill="#ffffff"></circle></svg>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+      });
+
+      const stationIcon = window.L.divIcon({
+        className: 'bg-transparent',
+        html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#eab308" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 drop-shadow-md transition-transform hover:scale-110" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3" fill="#ffffff"></circle></svg>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 28],
+        popupAnchor: [0, -28]
+      });
+
       // Add user marker
-      userMarkerRef.current = window.L.marker([lat, lon]).addTo(mapInstance.current)
+      userMarkerRef.current = window.L.marker([lat, lon], { icon: userIcon }).addTo(mapInstance.current)
         .bindPopup(t('home_your_location'));
 
       if (accuracy) {
@@ -96,21 +115,19 @@ const Home = () => {
       // Add station markers
       stations.forEach(s => {
         if (s.coords) {
-          const marker = window.L.circleMarker([s.coords.lat, s.coords.lon], {
-            radius: 8,
-            fillColor: "#3b82f6",
-            color: "#ffffff",
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-          }).addTo(mapInstance.current);
+          const marker = window.L.marker([s.coords.lat, s.coords.lon], { icon: stationIcon }).addTo(mapInstance.current);
           
-          marker.bindTooltip(getName(s.name, language), { permanent: false, direction: 'top' });
+          marker.bindTooltip(getName(s.name, language), { permanent: false, direction: 'top', offset: [0, -28] });
           
           marker.on('click', () => {
             setCurrentStation(s);
             setNoNearby(false);
             setManualStation(s.name.en);
+            setManualLine(prev => {
+              if (LINES[prev] && LINES[prev].includes(s.name.en)) return prev;
+              const found = Object.entries(LINES).find(([_, stns]) => stns.includes(s.name.en));
+              return found ? found[0] : prev;
+            });
           });
 
           stationMarkersRef.current[s.id] = marker;
@@ -154,9 +171,17 @@ const Home = () => {
     // Sensitivity set to 500m (0.5km)
     if (nearest && best <= 0.5) {
       setCurrentStation(nearest);
+      setManualStation(nearest.name.en);
       setNoNearby(false);
+      setManualLine(prev => {
+        if (LINES[prev] && LINES[prev].includes(nearest.name.en)) return prev;
+        const found = Object.entries(LINES).find(([_, stns]) => stns.includes(nearest.name.en));
+        return found ? found[0] : prev;
+      });
     } else {
       setCurrentStation(stations[0]); // Barra
+      setManualStation('Barra');
+      setManualLine('Taipa Line');
       setNoNearby(true);
     }
   };
@@ -292,16 +317,28 @@ const Home = () => {
       const toHengqin = getNextLotusHengqinArrivals(1);
       const res = [];
       
-      // Taipa Line Platforms
-      if (toTaipa) res.push({ stationId: '7', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（氹仔線1號月台）' }, times: toTaipa, status: '' });
-      else res.push({ stationId: '7', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（氹仔線1號月台）' }, times: [], status: 'Out of Service' });
-      
-      if (toBarra) res.push({ stationId: '7', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（氹仔線2號月台）' }, times: toBarra, status: '' });
-      else res.push({ stationId: '7', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（氹仔線2號月台）' }, times: [], status: 'Out of Service' });
+      if (manualLine === 'Taipa Line') {
+        // Taipa Line Platforms
+        if (toTaipa) res.push({ stationId: '7', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+        else res.push({ stationId: '7', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+        
+        if (toBarra) res.push({ stationId: '7', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+        else res.push({ stationId: '7', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      } else if (manualLine === 'Hengqin Line') {
+        // Hengqin Line Platform
+        if (toHengqin) res.push({ stationId: '7', direction: { en: 'Hengqin (Hengqin Line P3)', zh: '橫琴（3號月台）' }, times: toHengqin, status: '' });
+        else res.push({ stationId: '7', direction: { en: 'Hengqin (Hengqin Line P3)', zh: '橫琴（3號月台）' }, times: [], status: 'Out of Service' });
+      } else {
+        // Fallback: show all if not properly matched (e.g. initial load without specific line logic)
+        if (toTaipa) res.push({ stationId: '7', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+        else res.push({ stationId: '7', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+        
+        if (toBarra) res.push({ stationId: '7', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+        else res.push({ stationId: '7', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
 
-      // Hengqin Line Platform
-      if (toHengqin) res.push({ stationId: '7', direction: { en: 'Hengqin (Hengqin Line P3)', zh: '橫琴（橫琴線3號月台）' }, times: toHengqin, status: '' });
-      else res.push({ stationId: '7', direction: { en: 'Hengqin (Hengqin Line P3)', zh: '橫琴（橫琴線3號月台）' }, times: [], status: 'Out of Service' });
+        if (toHengqin) res.push({ stationId: '7', direction: { en: 'Hengqin (Hengqin Line P3)', zh: '橫琴（3號月台）' }, times: toHengqin, status: '' });
+        else res.push({ stationId: '7', direction: { en: 'Hengqin (Hengqin Line P3)', zh: '橫琴（3號月台）' }, times: [], status: 'Out of Service' });
+      }
       
       return res;
     }
@@ -311,16 +348,28 @@ const Home = () => {
       const toSPV = getNextHospitalSPVArrivals(1);
       const res = [];
       
-      // Taipa Line Platforms
-      if (toTaipa) res.push({ stationId: '8', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（氹仔線1號月台）' }, times: toTaipa, status: '' });
-      else res.push({ stationId: '8', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（氹仔線1號月台）' }, times: [], status: 'Out of Service' });
-      
-      if (toBarra) res.push({ stationId: '8', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（氹仔線2號月台）' }, times: toBarra, status: '' });
-      else res.push({ stationId: '8', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      if (manualLine === 'Taipa Line') {
+        // Taipa Line Platforms
+        if (toTaipa) res.push({ stationId: '8', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+        else res.push({ stationId: '8', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+        
+        if (toBarra) res.push({ stationId: '8', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+        else res.push({ stationId: '8', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
+      } else if (manualLine === 'Seac Pai Van Line') {
+        // Seac Pai Van Line Platform
+        if (toSPV) res.push({ stationId: '8', direction: { en: 'Seac Pai Van (SPV Line P3/4)', zh: '石排灣（3/4號月台）' }, times: toSPV, status: '' });
+        else res.push({ stationId: '8', direction: { en: 'Seac Pai Van (SPV Line P3/4)', zh: '石排灣（3/4號月台）' }, times: [], status: 'Out of Service' });
+      } else {
+        // Fallback
+        if (toTaipa) res.push({ stationId: '8', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（1號月台）' }, times: toTaipa, status: '' });
+        else res.push({ stationId: '8', direction: { en: 'Taipa Ferry Terminal (Taipa Line P1)', zh: '氹仔碼頭（1號月台）' }, times: [], status: 'Out of Service' });
+        
+        if (toBarra) res.push({ stationId: '8', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（2號月台）' }, times: toBarra, status: '' });
+        else res.push({ stationId: '8', direction: { en: 'Barra (Taipa Line P2)', zh: '媽閣（2號月台）' }, times: [], status: 'Out of Service' });
 
-      // Seac Pai Van Line Platform
-      if (toSPV) res.push({ stationId: '8', direction: { en: 'Seac Pai Van (SPV Line P3/4)', zh: '石排灣（石排灣線3/4號月台）' }, times: toSPV, status: '' });
-      else res.push({ stationId: '8', direction: { en: 'Seac Pai Van (SPV Line P3/4)', zh: '石排灣（石排灣線3/4號月台）' }, times: [], status: 'Out of Service' });
+        if (toSPV) res.push({ stationId: '8', direction: { en: 'Seac Pai Van (SPV Line P3/4)', zh: '石排灣（3/4號月台）' }, times: toSPV, status: '' });
+        else res.push({ stationId: '8', direction: { en: 'Seac Pai Van (SPV Line P3/4)', zh: '石排灣（3/4號月台）' }, times: [], status: 'Out of Service' });
+      }
       
       return res;
     }
@@ -424,9 +473,12 @@ const Home = () => {
         <div className="flex justify-between items-start mb-6">
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold">{t('app_name')}</h1>
-                <p className="text-blue-100 text-sm mt-1">{t('welcome_message')}</p>
+              <div className="flex items-center space-x-3">
+                <img src="/Logo.png" alt="Logo" className="w-12 h-12 rounded-full shadow-sm bg-white p-0.5 object-cover" />
+                <div>
+                  <h1 className="text-2xl font-bold">{t('app_name')}</h1>
+                  <p className="text-blue-100 text-sm mt-1">{t('welcome_message')}</p>
+                </div>
               </div>
               <div className="flex bg-blue-500/30 p-1 rounded-xl backdrop-blur-sm border border-white/10">
                 <button 
