@@ -24,23 +24,33 @@ const FareQuery = () => {
   const rules = [
     { 
       zh: '長者/殘疾人士電子卡：全程免費', 
-      en: 'Elderly/Disabled Electronic Card: Free of charge for the entire journey' 
+      'zh-CN': '长者/残疾人士电子卡：全程免费',
+      en: 'Elderly/Disabled Electronic Card: Free of charge for the entire journey',
+      pt: 'Cartão eletrónico para idosos/pessoas com deficiência: Viagem gratuita em todo o percurso'
     },
     { 
       zh: '殘疾人士/長者個人澳門通卡：等同於長者/和殘疾人士電子卡', 
-      en: 'Personalized Macau Pass for Disabled/Elderly: Equivalent to Elderly/Disabled Electronic Card' 
+      'zh-CN': '残疾人士/长者个人澳门通卡：等同于长者/和残疾人士电子卡',
+      en: 'Personalized Macau Pass for Disabled/Elderly: Equivalent to Elderly/Disabled Electronic Card',
+      pt: 'Macau Pass personalizado para pessoas com deficiência/idosos: Equivalente ao cartão eletrónico para idosos/pessoas com deficiência'
     },
     { 
       zh: '一般澳門通卡：享一般輕軌通之優惠', 
-      en: 'General Macau Pass: Enjoys the same discounts as the general LRT Card' 
+      'zh-CN': '一般澳门通卡：享一般轻轨通之优惠',
+      en: 'General Macau Pass: Enjoys the same discounts as the general LRT Card',
+      pt: 'Macau Pass geral: Desfruta dos mesmos descontos que o cartão LRT geral'
     },
     { 
       zh: '學生個人澳門通卡：等同於學生電子預付卡', 
-      en: 'Personalized Macau Pass for Students: Equivalent to Student Electronic Prepaid Card' 
+      'zh-CN': '学生个人澳门通卡：等同于学生电子预付卡',
+      en: 'Personalized Macau Pass for Students: Equivalent to Student Electronic Prepaid Card',
+      pt: 'Macau Pass personalizado para estudantes: Equivalente ao cartão pré-pago eletrónico para estudantes'
     },
     { 
       zh: '身高一米以下的小童無需購票，但須由一名成人隨行', 
-      en: 'Children under one meter in height do not need a ticket but must be accompanied by an adult' 
+      'zh-CN': '身高一米以下的小童无需购票，但须由一名成人随行',
+      en: 'Children under one meter in height do not need a ticket but must be accompanied by an adult',
+      pt: 'Crianças com menos de um metro de altura não precisam de bilhete, mas devem ser acompanhadas por um adulto'
     }
   ];
 
@@ -98,7 +108,7 @@ const FareQuery = () => {
               {rules.map((rule, idx) => (
                 <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-start">
                   <Info className="w-5 h-5 text-blue-500 mt-0.5 mr-3 shrink-0" />
-                  <p className="text-slate-600 text-sm leading-relaxed">{language === 'zh' ? rule.zh : rule.en}</p>
+                  <p className="text-slate-600 text-sm leading-relaxed">{language === 'zh' ? rule.zh : (language === 'zh-CN' ? rule['zh-CN'] : (language === 'pt' ? rule.pt : rule.en))}</p>
                 </div>
               ))}
             </div>

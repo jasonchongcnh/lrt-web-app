@@ -7,8 +7,20 @@ import { useLanguage } from '../contexts/LanguageContext';
 const My = () => {
   const { t, language, setLanguage } = useLanguage();
 
-  const toggleLanguage = () => {
-    setLanguage(prev => prev === 'en' ? 'zh' : 'en');
+  const cycleLanguage = () => {
+    setLanguage(prev => {
+      if (prev === 'zh') return 'zh-CN';
+      if (prev === 'zh-CN') return 'en';
+      if (prev === 'en') return 'pt';
+      return 'zh';
+    });
+  };
+
+  const getLanguageDisplay = (lang) => {
+    if (lang === 'zh') return '繁體中文';
+    if (lang === 'zh-CN') return '简体中文';
+    if (lang === 'en') return 'English';
+    return 'Português';
   };
 
   const menuItems = [
@@ -18,8 +30,8 @@ const My = () => {
     { 
       icon: Globe, 
       label: t('my_language'), 
-      action: toggleLanguage,
-      value: language === 'en' ? 'English' : '中文'
+      action: cycleLanguage,
+      value: getLanguageDisplay(language)
     },
     { icon: Moon, label: t('my_dark_mode') },
     { icon: FileText, label: t('my_terms') },

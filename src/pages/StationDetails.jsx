@@ -43,108 +43,108 @@ const StationDetails = () => {
   const serviceHours = getStationServiceHours(id);
 
   const facilities = [
-    { zh: '客戶服務中心', en: 'Customer Service Centre' },
-    { zh: '升降機', en: 'Elevator' },
-    { zh: '扶手電梯', en: 'Escalator' },
-    { zh: '無障礙洗手間', en: 'Accessible Toilet' },
-    { zh: '加闊閘機', en: 'Wide Gate' },
-    { zh: '候車座椅', en: 'Platform Seats' },
-    { zh: '車站摸讀平面圖', en: 'Tactile Station Layout Plan' },
-    { zh: '育嬰枱', en: 'Baby Care Table' },
-    { zh: '失明人士引導徑', en: 'Tactile Guide Path' },
-    { zh: '自動體外心臟除顫器(AED)', en: 'AED' }
+    { zh: '客戶服務中心', 'zh-CN': '客户服务中心', en: 'Customer Service Centre', pt: 'Centro de Atendimento ao Cliente' },
+    { zh: '升降機', 'zh-CN': '电梯', en: 'Elevator', pt: 'Elevador' },
+    { zh: '扶手電梯', 'zh-CN': '扶手电梯', en: 'Escalator', pt: 'Escada rolante' },
+    { zh: '無障礙洗手間', 'zh-CN': '无障碍洗手间', en: 'Accessible Toilet', pt: 'Casa de banho acessível' },
+    { zh: '加闊閘機', 'zh-CN': '加宽闸机', en: 'Wide Gate', pt: 'Porta larga' },
+    { zh: '候車座椅', 'zh-CN': '候车座椅', en: 'Platform Seats', pt: 'Lugares na plataforma' },
+    { zh: '車站摸讀平面圖', 'zh-CN': '车站摸读平面图', en: 'Tactile Station Layout Plan', pt: 'Planta tátil da estação' },
+    { zh: '育嬰枱', 'zh-CN': '育婴台', en: 'Baby Care Table', pt: 'Mesa de cuidado para bebés' },
+    { zh: '失明人士引導徑', 'zh-CN': '失明人士引导径', en: 'Tactile Guide Path', pt: 'Caminho de guia tátil' },
+    { zh: '自動體外心臟除顫器(AED)', 'zh-CN': '自动体外心脏除颤器(AED)', en: 'AED', pt: 'AED' }
   ];
 
   // Specific facilities
   if (id === '1') { // Barra
-    facilities.push({ zh: '哺乳室', en: 'Nursing Room' });
-    facilities.push({ zh: '親子洗手間', en: 'Family Toilet' });
+    facilities.push({ zh: '哺乳室', 'zh-CN': '哺乳室', en: 'Nursing Room', pt: 'Sala de amamentação' });
+    facilities.push({ zh: '親子洗手間', 'zh-CN': '亲子洗手间', en: 'Family Toilet', pt: 'Casa de banho para famílias' });
   } else if (id === '15') { // Hengqin
-    facilities.push({ zh: '親子洗手間', en: 'Family Toilet' });
+    facilities.push({ zh: '親子洗手間', 'zh-CN': '亲子洗手间', en: 'Family Toilet', pt: 'Casa de banho para famílias' });
   }
 
   // Live arrivals based on station id/timetable
   const liveArrivals = (() => {
     if (id === '1') {
       const times = getNextBarraArrivals(3);
-      return [{ direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）' }, times }];
+      return [{ direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times }];
     }
     if (id === '2') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）' }, times: getNextOceanArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）' }, times: getNextOceanArrivals('Barra', 3) },
+        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextOceanArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextOceanArrivals('Barra', 3) },
       ];
     }
     if (id === '3') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）' }, times: getNextJockeyClubArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）' }, times: getNextJockeyClubArrivals('Barra', 3) },
+        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextJockeyClubArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextJockeyClubArrivals('Barra', 3) },
       ];
     }
     if (id === '4') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）' }, times: getNextStadiumArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）' }, times: getNextStadiumArrivals('Barra', 3) },
+        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextStadiumArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextStadiumArrivals('Barra', 3) },
       ];
     }
     if (id === '5') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）' }, times: getNextPaiKokArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）' }, times: getNextPaiKokArrivals('Barra', 3) },
+        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextPaiKokArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextPaiKokArrivals('Barra', 3) },
       ];
     }
     if (id === '6') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）' }, times: getNextCotaiOesteArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）' }, times: getNextCotaiOesteArrivals('Barra', 3) },
+        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextCotaiOesteArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextCotaiOesteArrivals('Barra', 3) },
       ];
     }
     if (id === '7') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (Taipa P1)', zh: '氹仔碼頭（氹仔線1號月台）' }, times: getNextLotusArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (Taipa P2)', zh: '媽閣（氹仔線2號月台）' }, times: getNextLotusArrivals('Barra', 3) },
-        { direction: { en: 'Hengqin (Hengqin P3)', zh: '橫琴（橫琴線3號月台）' }, times: getNextLotusHengqinArrivals(3) },
+        { direction: { en: 'Taipa Ferry Terminal (Taipa P1)', zh: '氹仔碼頭（氹仔線1號月台）', 'zh-CN': '氹仔码头（氹仔线1号月台）', pt: 'Terminal de Barcos da Taipa (Linha da Taipa P1)' }, times: getNextLotusArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (Taipa P2)', zh: '媽閣（氹仔線2號月台）', 'zh-CN': '妈阁（氹仔线2号月台）', pt: 'Barra (Linha da Taipa P2)' }, times: getNextLotusArrivals('Barra', 3) },
+        { direction: { en: 'Hengqin (Hengqin P3)', zh: '橫琴（橫琴線3號月台）', 'zh-CN': '横琴（横琴线3号月台）', pt: 'Hengqin (Linha Hengqin P3)' }, times: getNextLotusHengqinArrivals(3) },
       ];
     }
     if (id === '8') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (Taipa P1)', zh: '氹仔碼頭（氹仔線1號月台）' }, times: getNextHospitalArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (Taipa P2)', zh: '媽閣（氹仔線2號月台）' }, times: getNextHospitalArrivals('Barra', 3) },
-        { direction: { en: 'Seac Pai Van (SPV P3/4)', zh: '石排灣（石排灣線3/4號月台）' }, times: getNextHospitalSPVArrivals(3) },
+        { direction: { en: 'Taipa Ferry Terminal (Taipa P1)', zh: '氹仔碼頭（氹仔線1號月台）', 'zh-CN': '氹仔码头（氹仔线1号月台）', pt: 'Terminal de Barcos da Taipa (Linha da Taipa P1)' }, times: getNextHospitalArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (Taipa P2)', zh: '媽閣（氹仔線2號月台）', 'zh-CN': '妈阁（氹仔线2号月台）', pt: 'Barra (Linha da Taipa P2)' }, times: getNextHospitalArrivals('Barra', 3) },
+        { direction: { en: 'Seac Pai Van (SPV P3/4)', zh: '石排灣（石排灣線3/4號月台）', 'zh-CN': '石排湾（石排湾线3/4号月台）', pt: 'Seac Pai Van (Linha SPV P3/4)' }, times: getNextHospitalSPVArrivals(3) },
       ];
     }
     if (id === '9') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）' }, times: getNextEastAsianGamesArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）' }, times: getNextEastAsianGamesArrivals('Barra', 3) },
+        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextEastAsianGamesArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextEastAsianGamesArrivals('Barra', 3) },
       ];
     }
     if (id === '10') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）' }, times: getNextCotaiLesteArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）' }, times: getNextCotaiLesteArrivals('Barra', 3) },
+        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextCotaiLesteArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextCotaiLesteArrivals('Barra', 3) },
       ];
     }
     if (id === '11') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）' }, times: getNextMustArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）' }, times: getNextMustArrivals('Barra', 3) },
+        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextMustArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextMustArrivals('Barra', 3) },
       ];
     }
     if (id === '12') {
       return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）' }, times: getNextAirportArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）' }, times: getNextAirportArrivals('Barra', 3) },
+        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextAirportArrivals('Taipa', 3) },
+        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextAirportArrivals('Barra', 3) },
       ];
     }
     if (id === '13') {
-      return [{ direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）' }, times: getNextTaipaFerryArrivals(3) }];
+      return [{ direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextTaipaFerryArrivals(3) }];
     }
     if (id === '14') {
-      return [{ direction: { en: 'Union Hospital (P1/2)', zh: '協和醫院（1/2號月台）' }, times: getNextSeacPaiVanArrivals(3) }];
+      return [{ direction: { en: 'Union Hospital (P1/2)', zh: '協和醫院（1/2號月台）', 'zh-CN': '协和医院（1/2号月台）', pt: 'Hospital Universitário (Plataforma 1/2)' }, times: getNextSeacPaiVanArrivals(3) }];
     }
     if (id === '15') {
-      return [{ direction: { en: 'Lotus (P1)', zh: '蓮花（1號月台）' }, times: getNextHengqinArrivals(3) }];
+      return [{ direction: { en: 'Lotus (P1)', zh: '蓮花（1號月台）', 'zh-CN': '莲花（1号月台）', pt: 'Lótus (Plataforma 1)' }, times: getNextHengqinArrivals(3) }];
     }
     return [];
   })();
@@ -303,7 +303,7 @@ const StationDetails = () => {
                       <div className="flex flex-wrap gap-2 mt-1">
                         {facilities.map((f, i) => (
                           <Badge key={i} variant="secondary" className="bg-white border-slate-200 text-slate-700 font-normal">
-                            {language === 'zh' ? f.zh : f.en}
+                            {language === 'zh' ? f.zh : (language === 'zh-CN' ? f['zh-CN'] : (language === 'pt' ? f.pt : f.en))}
                           </Badge>
                         ))}
                       </div>
