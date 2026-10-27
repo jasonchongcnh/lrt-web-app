@@ -1,4 +1,4 @@
-export const REMOTE_BASE = 'https://jasonchongcnh.github.io/lrt-web-app/';
+export const REMOTE_BASE = import.meta.env?.VITE_ASSET_BASE ?? 'https://jasonchongcnh.github.io/lrt-web-app/';
 
 export const stations = [
   // Taipa Line (L1)

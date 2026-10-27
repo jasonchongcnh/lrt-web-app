@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { Button } from '../components/ui/button';
+import React, { useState } from 'react';
 import { getName } from '../lib/utils';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../contexts/language';
 import { stations } from '../lib/data';
+import { LINES, calculateFare, planRoute } from '../lib/routes';
 
 const RoutePlanning = () => {
   const { t, language } = useLanguage();
@@ -11,21 +11,6 @@ const RoutePlanning = () => {
   const [fareType, setFareType] = useState('stored');
   const [fromLine, setFromLine] = useState('Taipa');
   const [toLine, setToLine] = useState('Taipa');
-
-  const LINES = useMemo(() => ({
-    Taipa: ['1','2','3','4','5','6','7','8','9','10','11','12','13'],
-    SeacPaiVan: ['8','14'],
-    Hengqin: ['7','15']
-  }), []);
-
-  const EDGES = useMemo(() => {
-    const edges = {};
-    const add = (a,b)=>{ (edges[a]=edges[a]||new Set()).add(b); (edges[b]=edges[b]||new Set()).add(a); };
-    Object.values(LINES).forEach(arr=>{
-      for (let i=0;i<arr.length-1;i++){ add(arr[i], arr[i+1]); }
-    });
-    return edges;
-  }, [LINES]);
 
   const nameById = (id) => {
     const s = stations.find(s=>s.id===id);
@@ -38,125 +23,8 @@ const RoutePlanning = () => {
     return key;
   };
 
-  const shortestPath = (start, end) => {
-    if (!start || !end) return null;
-    if (start === end) return [start];
-    const q = [start];
-    const prev = {};
-    const seen = new Set([start]);
-    let found = false;
-    while (q.length) {
-      const node = q.shift();
-      for (const nb of (EDGES[node]||[])) {
-        if (seen.has(nb)) continue;
-        prev[nb] = node;
-        if (nb === end) { found = true; break; }
-        seen.add(nb);
-        q.push(nb);
-      }
-      if (found) break;
-    }
-    if (!found && !prev[end]) return null;
-    const path = [end];
-    let cur = end;
-    while (prev[cur]) { cur = prev[cur]; path.unshift(cur); }
-    return path;
-  };
-
-  const isAdjacentOn = (lineKey, a, b) => {
-    const arr = LINES[lineKey];
-    for (let i=0;i<arr.length-1;i++){
-      if ((arr[i]===a && arr[i+1]===b) || (arr[i]===b && arr[i+1]===a)) return true;
-    }
-    return false;
-  };
-
-  const edgeLine = (a,b) => {
-    if (isAdjacentOn('Taipa', a, b)) return t('line_taipa');
-    if (isAdjacentOn('SeacPaiVan', a, b)) return t('line_seacpaivan');
-    if (isAdjacentOn('Hengqin', a, b)) return t('line_hengqin');
-    return '';
-  };
-
-  const pathToSegments = (path) => {
-    if (!path || path.length<2) return [];
-    let curLine = edgeLine(path[0], path[1]);
-    let start = path[0];
-    let prev = path[1];
-    const legs = [];
-    for (let i=2;i<path.length;i++){
-      const ln = edgeLine(prev, path[i]);
-      if (ln !== curLine){
-        legs.push({ line: curLine, from: start, to: prev, stops: Math.max(1, path.slice(path.indexOf(start), path.indexOf(prev)+1).length-1) });
-        start = prev;
-        curLine = ln;
-      }
-      prev = path[i];
-    }
-    legs.push({ line: curLine, from: start, to: prev, stops: Math.max(1, path.slice(path.indexOf(start), path.indexOf(prev)+1).length-1) });
-    return legs;
-  };
-
-  const adjustedStops = (start, end) => {
-    const path = shortestPath(start, end);
-    if (!path) return null;
-    let stops = path.length - 1;
-    const hasBarraOcean = path.join(',').includes(['1','2'].join(',')) || path.join(',').includes(['2','1'].join(','));
-    const hasHengqinLotus = path.join(',').includes(['15','7'].join(',')) || path.join(',').includes(['7','15'].join(','));
-    if (hasBarraOcean) stops += 1;
-    if (hasHengqinLotus) stops += 1;
-    const isStartEndUH = (start === '8' || end === '8' || start === '14' || end === '14');
-    if (!isStartEndUH) {
-      if (path.includes('8') && path[0] !== '8' && path[path.length-1] !== '8') {
-        stops = Math.max(0, stops - 1);
-      }
-    }
-    return stops;
-  };
-
-  const calculateTravelTime = (path) => {
-    if (!path || path.length < 2) return 0;
-    let time = 0;
-    for (let i = 0; i < path.length - 1; i++) {
-      const a = path[i];
-      const b = path[i+1];
-      // Barra (1) <-> Ocean (2) is 5 minutes
-      if ((a === '1' && b === '2') || (a === '2' && b === '1')) {
-        time += 5;
-      } else {
-        time += 2;
-      }
-    }
-    return time;
-  };
-
-  const bands = [
-    { max: 3, single: 6, stored: 3, student: 1.5 },
-    { max: 6, single: 8, stored: 4, student: 2 },
-    { max: 9, single: 10, stored: 5, student: 2.5 },
-    { max: 12, single: 12, stored: 6, student: 3 },
-  ];
-
-  const route = useMemo(() => {
-    const p = shortestPath(fromStation, toStation);
-    if (!p) return null;
-    return {
-      path: p,
-      legs: pathToSegments(p),
-      time: calculateTravelTime(p)
-    };
-  }, [fromStation, toStation, language]);
-
-  const result = useMemo(() => {
-    const stops = adjustedStops(fromStation, toStation);
-    if (stops == null) return { stops: '-', price: '-' };
-    const band = bands.find(b => stops <= b.max) || bands[bands.length-1];
-    if (fareType === 'free') return { stops, price: 0 };
-    if (fareType === 'single') return { stops, price: band.single };
-    if (fareType === 'stored') return { stops, price: band.stored };
-    if (fareType === 'student') return { stops, price: band.student };
-    return { stops, price: band.single };
-  }, [fromStation, toStation, fareType]);
+  const route = planRoute(fromStation, toStation);
+  const result = calculateFare(fromStation, toStation, fareType);
 
   return (
     <div className="min-h-full bg-slate-50">
@@ -246,7 +114,7 @@ const RoutePlanning = () => {
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center">
                             <div className="w-2 h-2 rounded-full bg-blue-400 mr-2"></div>
-                            <span className="text-sm font-bold text-blue-100">{leg.line}</span>
+                            <span className="text-sm font-bold text-blue-100">{lineName(leg.line)}</span>
                           </div>
                           <span className="text-xs text-slate-300 bg-white/10 px-2 py-1 rounded-md">{t('route_ride_action')} · {leg.stops} {t('route_stops')}</span>
                         </div>

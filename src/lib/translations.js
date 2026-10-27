@@ -1,5 +1,11 @@
 export const translations = {
   en: {
+    calendar_unknown: "Public-holiday dates for this year are unconfirmed. Shown times may differ on holidays; check the operator before travelling.",
+    station_in_service: "Scheduled service hours",
+    station_schedule_unconfirmed: "Schedule unconfirmed",
+    station_next_day: "(next day)",
+    station_search_empty: "No matching stations. Try another station or line name.",
+    station_view_details: "View details",
     // Navigation
     nav_home: "Home",
     nav_route: "Route",
@@ -31,7 +37,7 @@ export const translations = {
 
     // Station Details
     station_zone: "Zone",
-    station_tab_arrivals: "Live Departures",
+    station_tab_arrivals: "Scheduled Departures",
     station_tab_info: "Info",
     station_tab_area: "Area",
     station_next: "Next",
@@ -128,7 +134,7 @@ export const translations = {
     fare_rule_seniors: "Seniors",
     fare_rule_seniors_desc: "Free travel for seniors over 65.",
     fare_rule_refunds: "Refunds",
-    fare_rule_refunds_desc: "Tickets are valid for the day perchased.",
+    fare_rule_refunds_desc: "Tickets are valid for the day purchased.",
     fare_type_single: "Single Journey Tickets",
     fare_type_stored: "General Electronic Prepaid Card | Macau Pass | Concessionary Single Journey Ticket",
     fare_type_student: "Student Electronic Prepaid Card | Student Macau Pass",
@@ -173,6 +179,15 @@ export const translations = {
     status_delayed: "Delayed",
   },
   zh: {
+    home_current_location: "目前位置",
+    status_on_time: "準時",
+    status_delayed: "延誤",
+    calendar_unknown: "尚未確認本年度公眾假期。假期班次可能與所示時間不同，出行前請向營運方確認。",
+    station_in_service: "預定營運時段",
+    station_schedule_unconfirmed: "班次待確認",
+    station_next_day: "（翌日）",
+    station_search_empty: "找不到相符車站，請嘗試其他站名或線路名稱。",
+    station_view_details: "查看詳情",
     // Navigation
     nav_home: "首頁",
     nav_route: "路線",
@@ -181,8 +196,6 @@ export const translations = {
     nav_my: "我的",
 
     // Home
-    app_name: "澳門輕軌App",
-    welcome_message: "歡迎乘搭澳門輕軌",
     app_name: "澳門輕軌App",
     welcome_message: "歡迎乘搭澳門輕軌",
     home_near: "附近",
@@ -202,11 +215,10 @@ export const translations = {
     station_tab_list: "車站",
     station_tab_map: "路線圖",
     home_where_to: "去哪裡？",
-    home_announcements: "公告與活動",
 
     // Station Details
     station_zone: "區域",
-    station_tab_arrivals: "實時班次",
+    station_tab_arrivals: "預定班次",
     station_tab_info: "資訊",
     station_tab_area: "周邊",
     station_next: "下班",
@@ -346,6 +358,12 @@ export const translations = {
     common_retry: "重試",
   },
   pt: {
+    calendar_unknown: "Os feriados deste ano ainda não estão confirmados. Os horários podem diferir nos feriados; confirme com o operador antes de viajar.",
+    station_in_service: "Horário de serviço previsto",
+    station_schedule_unconfirmed: "Horário não confirmado",
+    station_next_day: "(dia seguinte)",
+    station_search_empty: "Nenhuma estação encontrada. Tente outro nome de estação ou linha.",
+    station_view_details: "Ver detalhes",
     // Navigation
     nav_home: "Início",
     nav_route: "Rota",
@@ -377,7 +395,7 @@ export const translations = {
 
     // Station Details
     station_zone: "Zona",
-    station_tab_arrivals: "Partidas em Tempo Real",
+    station_tab_arrivals: "Partidas previstas",
     station_tab_info: "Informação",
     station_tab_area: "Área",
     station_next: "Próximo",
@@ -519,6 +537,15 @@ export const translations = {
     status_delayed: "Atrasado",
   },
   'zh-CN': {
+    home_current_location: "当前位置",
+    status_on_time: "准时",
+    status_delayed: "延误",
+    calendar_unknown: "尚未确认本年度公众假期。假期班次可能与所示时间不同，出行前请向运营方确认。",
+    station_in_service: "计划运营时段",
+    station_schedule_unconfirmed: "班次待确认",
+    station_next_day: "（次日）",
+    station_search_empty: "找不到匹配车站，请尝试其他站名或线路名称。",
+    station_view_details: "查看详情",
     // Navigation
     nav_home: "首页",
     nav_route: "路线",
@@ -546,11 +573,10 @@ export const translations = {
     station_tab_list: "车站",
     station_tab_map: "路线图",
     home_where_to: "去哪里？",
-    home_announcements: "公告与活动",
 
     // Station Details
     station_zone: "区域",
-    station_tab_arrivals: "实时班次",
+    station_tab_arrivals: "计划班次",
     station_tab_info: "资讯",
     station_tab_area: "周边",
     station_next: "下班",

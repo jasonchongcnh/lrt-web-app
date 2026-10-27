@@ -1,25 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Map, Ticket, MapPin, User } from 'lucide-react';
+import { Home, Map, Ticket, MapPin } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../contexts/language';
 
 const Layout = () => {
   const location = useLocation();
   const { t } = useLanguage();
-  const [timeStr, setTimeStr] = useState('00:00');
-
   useEffect(() => {
-    const fmt = (n) => (n < 10 ? `0${n}` : `${n}`);
-    const update = () => {
-      const now = new Date();
-      const gmt8 = new Date(now.getTime() + (8 * 60 + now.getTimezoneOffset()) * 60000);
-      setTimeStr(`${fmt(gmt8.getHours())}:${fmt(gmt8.getMinutes())}`);
-    };
-    update();
-    const id = setInterval(update, 30000);
-    return () => clearInterval(id);
-  }, []);
+    window.scrollTo({ top: 0, left: 0 });
+  }, [location.pathname]);
 
   const navItems = [
     { path: '/', label: t('nav_home'), icon: Home },
@@ -41,11 +31,13 @@ const Layout = () => {
         <div className="flex justify-between items-center max-w-md mx-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path ||
+              (item.path !== '/' && location.pathname.startsWith(`${item.path}/`));
             return (
               <Link
                 key={item.path}
                 to={item.path}
+                aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   "flex flex-col items-center justify-center space-y-1 transition-all duration-300",
                   isActive ? "text-blue-600 scale-110" : "text-slate-400 hover:text-slate-600"

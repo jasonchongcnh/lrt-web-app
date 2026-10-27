@@ -1,219 +1,260 @@
-import React, { createContext, useState, useContext, useRef, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { X, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { useLanguage } from './LanguageContext';
+import { useLanguage } from './language';
+import { ImageContext } from './image';
 
-const ImageContext = createContext();
+const imageLabels = {
+  en: { close: 'Close image', zoomIn: 'Zoom in', zoomOut: 'Zoom out', reset: 'Reset zoom' },
+  zh: { close: '關閉圖片', zoomIn: '放大', zoomOut: '縮小', reset: '重設縮放' },
+  'zh-CN': { close: '关闭图片', zoomIn: '放大', zoomOut: '缩小', reset: '重置缩放' },
+  pt: { close: 'Fechar imagem', zoomIn: 'Ampliar', zoomOut: 'Reduzir', reset: 'Repor ampliação' },
+};
+const initialTransform = { scale: 1, x: 0, y: 0 };
+const clampScale = (scale) => Math.min(5, Math.max(1, scale));
+const distanceBetween = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const zoomBy = (transform, factor) => {
+  const scale = clampScale(transform.scale * factor);
+  return scale === 1 ? initialTransform : { ...transform, scale };
+};
 
-const ZoomableImage = ({ src, alt }) => {
-  const [scale, setScale] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+function ZoomableImage({ src, alt, labels, onClose }) {
+  const [transform, setTransform] = useState(initialTransform);
   const containerRef = useRef(null);
-  const imgRef = useRef(null);
-  const lastTouchRef = useRef({ x: 0, y: 0 });
-  const lastDistanceRef = useRef(0);
-  const isDraggingRef = useRef(false);
+  const imageRef = useRef(null);
+  const pointersRef = useRef(new Map());
+  const pinchDistanceRef = useRef(0);
+  const gestureRef = useRef(null);
+  const lastTapRef = useRef(0);
 
-  const resetZoom = useCallback(() => {
-    setScale(1);
-    setPosition({ x: 0, y: 0 });
-  }, []);
+  const resetZoom = () => setTransform(initialTransform);
 
-  const handleWheel = (e) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.min(Math.max(scale * delta, 1), 5);
-    setScale(newScale);
-    if (newScale === 1) setPosition({ x: 0, y: 0 });
-  };
-
-  const handleTouchStart = (e) => {
-    if (e.touches.length === 1) {
-      isDraggingRef.current = true;
-      lastTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    } else if (e.touches.length === 2) {
-      isDraggingRef.current = false;
-      const distance = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      lastDistanceRef.current = distance;
-    }
-  };
-
-  const handleTouchMove = (e) => {
-    if (e.touches.length === 1 && isDraggingRef.current && scale > 1) {
-      const deltaX = e.touches[0].clientX - lastTouchRef.current.x;
-      const deltaY = e.touches[0].clientY - lastTouchRef.current.y;
-      
-      setPosition(prev => ({
-        x: prev.x + deltaX,
-        y: prev.y + deltaY
-      }));
-      
-      lastTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    } else if (e.touches.length === 2) {
-      const distance = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      
-      const delta = distance / lastDistanceRef.current;
-      const newScale = Math.min(Math.max(scale * delta, 1), 5);
-      
-      setScale(newScale);
-      lastDistanceRef.current = distance;
-      
-      if (newScale === 1) setPosition({ x: 0, y: 0 });
-    }
-  };
-
-  const handleTouchEnd = () => {
-    isDraggingRef.current = false;
-    lastDistanceRef.current = 0;
-  };
-
-  const handleDoubleTap = () => {
-    if (scale > 1) {
-      resetZoom();
-    } else {
-      setScale(2.5);
-    }
-  };
-
-  // Prevent default gestures
+  // React's delegated wheel handler may be passive. Register on the viewer so
+  // preventing page zoom/scroll works consistently on trackpads and mice.
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
-
-    const preventDefault = (e) => {
-      if (e.touches.length > 1) e.preventDefault();
+    const onWheel = (event) => {
+      event.preventDefault();
+      setTransform((previous) => zoomBy(previous, event.deltaY > 0 ? 0.9 : 1.1));
     };
-
-    container.addEventListener('touchstart', preventDefault, { passive: false });
-    return () => container.removeEventListener('touchstart', preventDefault);
+    container.addEventListener('wheel', onWheel, { passive: false });
+    return () => container.removeEventListener('wheel', onWheel);
   }, []);
 
-  let lastTap = 0;
-  const onTouchEndWrapper = (e) => {
-    const now = Date.now();
-    if (now - lastTap < 300) {
-      handleDoubleTap();
+  const handlePointerDown = (event) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    const point = { x: event.clientX, y: event.clientY };
+    pointersRef.current.set(event.pointerId, point);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    if (pointersRef.current.size === 1) {
+      gestureRef.current = { start: point, moved: false, multiple: false, startedAt: Date.now() };
+    } else {
+      gestureRef.current.multiple = true;
+      lastTapRef.current = 0;
+      const [first, second] = [...pointersRef.current.values()];
+      pinchDistanceRef.current = distanceBetween(first, second);
     }
-    lastTap = now;
-    handleTouchEnd();
+  };
+
+  const handlePointerMove = (event) => {
+    const previousPoint = pointersRef.current.get(event.pointerId);
+    if (!previousPoint) return;
+    const point = { x: event.clientX, y: event.clientY };
+    pointersRef.current.set(event.pointerId, point);
+    if (distanceBetween(gestureRef.current.start, point) > 5) gestureRef.current.moved = true;
+
+    if (pointersRef.current.size >= 2) {
+      const [first, second] = [...pointersRef.current.values()];
+      const distance = distanceBetween(first, second);
+      // Two fingers can initially occupy the same pixel. Wait for a positive
+      // distance rather than allowing a zero division to poison the transform.
+      if (distance > 0 && pinchDistanceRef.current > 0) {
+        const ratio = distance / pinchDistanceRef.current;
+        setTransform((previous) => zoomBy(previous, ratio));
+      }
+      pinchDistanceRef.current = distance;
+    } else {
+      const dx = point.x - previousPoint.x;
+      const dy = point.y - previousPoint.y;
+      setTransform((previous) => previous.scale > 1
+        ? { ...previous, x: previous.x + dx, y: previous.y + dy }
+        : previous);
+    }
+  };
+
+  const finishPointer = (event, cancelled = false) => {
+    if (!pointersRef.current.has(event.pointerId)) return;
+    const gesture = gestureRef.current;
+    pointersRef.current.delete(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (pointersRef.current.size < 2) pinchDistanceRef.current = 0;
+    if (pointersRef.current.size !== 0) return;
+
+    if (!cancelled && !gesture.multiple && !gesture.moved && Date.now() - gesture.startedAt < 350) {
+      const bounds = imageRef.current.getBoundingClientRect();
+      const outsideImage = event.clientX < bounds.left || event.clientX > bounds.right ||
+        event.clientY < bounds.top || event.clientY > bounds.bottom;
+      if (outsideImage) {
+        onClose();
+      } else {
+        const now = Date.now();
+        if (lastTapRef.current > 0 && now - lastTapRef.current < 300) {
+          setTransform((previous) => previous.scale > 1 ? initialTransform : { scale: 2.5, x: 0, y: 0 });
+          lastTapRef.current = 0;
+        } else {
+          lastTapRef.current = now;
+        }
+      }
+    } else {
+      lastTapRef.current = 0;
+    }
+    gestureRef.current = null;
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className="relative w-full h-full flex items-center justify-center overflow-hidden touch-none"
-      onWheel={handleWheel}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={onTouchEndWrapper}
+      className={`relative w-full h-full flex items-center justify-center overflow-hidden touch-none ${transform.scale > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={(event) => finishPointer(event)}
+      onPointerCancel={(event) => finishPointer(event, true)}
     >
       <img
-        ref={imgRef}
+        ref={imageRef}
         src={src}
         alt={alt}
-        className="max-w-full max-h-full object-contain transition-transform duration-100 ease-out select-none pointer-events-none shadow-2xl"
-        style={{
-          transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-        }}
+        draggable={false}
+        className="max-w-full max-h-full object-contain select-none pointer-events-none shadow-2xl"
+        style={{ transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})` }}
       />
-      
-      {/* Zoom Controls Overlay */}
-      <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[10001]">
-        <Button 
-          variant="secondary" 
-          size="icon" 
+      <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-[10001]" onPointerDown={(event) => event.stopPropagation()}>
+        <Button
+          type="button"
+          size="icon"
+          aria-label={labels.zoomIn}
           className="bg-black/50 text-white border-none rounded-full h-10 w-10 backdrop-blur-md"
-          onClick={(e) => { e.stopPropagation(); setScale(prev => Math.min(prev + 0.5, 5)); }}
+          onClick={(event) => {
+            event.stopPropagation();
+            setTransform((previous) => ({ ...previous, scale: clampScale(previous.scale + 0.5) }));
+          }}
         >
           <ZoomIn className="w-5 h-5" />
         </Button>
-        <Button 
-          variant="secondary" 
-          size="icon" 
+        <Button
+          type="button"
+          size="icon"
+          aria-label={labels.zoomOut}
           className="bg-black/50 text-white border-none rounded-full h-10 w-10 backdrop-blur-md"
-          onClick={(e) => { e.stopPropagation(); setScale(prev => Math.max(prev - 0.5, 1)); if (scale <= 1.5) resetZoom(); }}
+          onClick={(event) => {
+            event.stopPropagation();
+            setTransform((previous) => previous.scale <= 1.5 ? initialTransform : { ...previous, scale: previous.scale - 0.5 });
+          }}
         >
           <ZoomOut className="w-5 h-5" />
         </Button>
-        <Button 
-          variant="secondary" 
-          size="icon" 
+        <Button
+          type="button"
+          size="icon"
+          aria-label={labels.reset}
           className="bg-black/50 text-white border-none rounded-full h-10 w-10 backdrop-blur-md"
-          onClick={(e) => { e.stopPropagation(); resetZoom(); }}
+          onClick={(event) => { event.stopPropagation(); resetZoom(); }}
         >
           <Maximize className="w-5 h-5" />
         </Button>
       </div>
     </div>
   );
-};
+}
 
 export const ImageProvider = ({ children }) => {
   const [activeImage, setActiveImage] = useState(null);
-  const { t } = useLanguage();
+  const sequenceRef = useRef(0);
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const titleId = useId();
+  const { t, language } = useLanguage();
+  const labels = imageLabels[language] ?? imageLabels.en;
 
-  const showImage = (url, title) => {
-    setActiveImage({ url, title });
-  };
+  const showImage = useCallback((url, title) => {
+    sequenceRef.current += 1;
+    setActiveImage({ url, title, id: sequenceRef.current });
+  }, []);
+  const closeImage = useCallback(() => setActiveImage(null), []);
+  const value = useMemo(() => ({ showImage }), [showImage]);
+
+  useEffect(() => {
+    if (!activeImage) return;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current.focus();
+    const handleKey = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeImage();
+      }
+      if (event.key === 'Tab') {
+        const controls = [...dialogRef.current.querySelectorAll('button, a[href], input, select, textarea, [tabindex="0"]')]
+          .filter((control) => !control.disabled);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [activeImage, closeImage]);
 
   return (
-    <ImageContext.Provider value={{ showImage }}>
+    <ImageContext.Provider value={value}>
       {children}
       {activeImage && (
-        <div 
-          className="fixed inset-0 z-[9999] bg-black/95 flex flex-col transition-all duration-300 animate-in fade-in"
-          onClick={() => setActiveImage(null)}
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          className="fixed inset-0 z-[9999] bg-black/95 flex flex-col"
+          onClick={closeImage}
         >
-          {/* Header */}
-          <div className="p-4 pt-10 flex justify-between items-center z-[10000]">
-            <div className="flex-1 px-4">
-              <h3 className="text-white font-bold text-lg truncate drop-shadow-md">
-                {activeImage.title}
-              </h3>
+          <div className="p-4 pt-10 flex justify-between items-center z-[10000]" onClick={(event) => event.stopPropagation()}>
+            <div className="flex-1 px-4 min-w-0">
+              <h3 id={titleId} className="text-white font-bold text-lg truncate drop-shadow-md">{activeImage.title}</h3>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              ref={closeButtonRef}
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={labels.close}
               className="text-white hover:bg-white/20 rounded-full h-12 w-12"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveImage(null);
-              }}
+              onClick={closeImage}
             >
               <X className="w-8 h-8" />
             </Button>
           </div>
-          
-          {/* Main Zoomable Content */}
-          <div className="flex-1 w-full relative" onClick={(e) => e.stopPropagation()}>
-            <ZoomableImage src={activeImage.url} alt={activeImage.title} />
+          <div className="flex-1 min-h-0 w-full relative" onClick={(event) => event.stopPropagation()}>
+            <ZoomableImage key={activeImage.id} src={activeImage.url} alt={activeImage.title} labels={labels} onClose={closeImage} />
           </div>
-          
-          {/* Footer Info */}
           <div className="p-6 text-center text-white/70 bg-gradient-to-t from-black/80 to-transparent">
-            <p className="text-sm">
-              {t('station_zoom_instructions')}
-            </p>
-            <p className="text-[10px] mt-2 opacity-50">
-              {t('station_click_bg_close')}
-            </p>
+            <p className="text-sm">{t('station_zoom_instructions')}</p>
+            <p className="text-[10px] mt-2 opacity-50">{t('station_click_bg_close')}</p>
           </div>
         </div>
       )}
     </ImageContext.Provider>
   );
-};
-
-export const useImage = () => {
-  const context = useContext(ImageContext);
-  if (!context) {
-    throw new Error('useImage must be used within an ImageProvider');
-  }
-  return context;
 };

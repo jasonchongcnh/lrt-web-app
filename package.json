@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "postbuild": "node scripts/prepare-pages.mjs",
     "lint": "eslint .",
+    "test": "node --test",
+    "test:browser": "node scripts/browser-smoke.mjs",
+    "test:timetable": "node --test scripts/timetable.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

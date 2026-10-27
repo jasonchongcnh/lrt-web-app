@@ -1,39 +1,43 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { translations } from '../lib/translations';
+import { LanguageContext } from './language';
 
-const LanguageContext = createContext();
+const STORAGE_KEY = 'macao-lrt-language';
+const languageTags = { zh: 'zh-Hant', 'zh-CN': 'zh-Hans', en: 'en', pt: 'pt' };
+const isLanguage = (value) => Object.hasOwn(languageTags, value);
+
+function readLanguage() {
+  try {
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    if (isLanguage(saved)) return saved;
+  } catch {
+    // Keep the app usable when browser storage is unavailable.
+  }
+  return 'zh';
+}
 
 export const LanguageProvider = ({ children }) => {
-  // Default to English, or detect browser language if needed
-  // For now, default to 'en' as per initial state, but we can switch to 'zh' if requested
-  const [language, setLanguage] = useState('zh'); // Defaulting to 'zh' as per user request to "Add Chinese"
+  const [language, updateLanguage] = useState(readLanguage);
+  const setLanguage = useCallback((value) => {
+    updateLanguage((previous) => {
+      const next = typeof value === 'function' ? value(previous) : value;
+      return isLanguage(next) ? next : previous;
+    });
+  }, []);
 
-  const t = (key) => {
-    const translation = translations[language][key];
-    if (!translation) {
-      console.warn(`Translation missing for key: ${key} in language: ${language}`);
-      return key;
+  useEffect(() => {
+    document.documentElement.lang = languageTags[language];
+    try {
+      window.localStorage.setItem(STORAGE_KEY, language);
+    } catch {
+      // Language switching still works for this visit without storage.
     }
-    return translation;
-  };
+  }, [language]);
 
-  const value = {
-    language,
-    setLanguage,
-    t
-  };
+  const t = useCallback((key) => (
+    translations[language][key] ?? translations.en[key] ?? key
+  ), [language]);
+  const value = useMemo(() => ({ language, setLanguage, t }), [language, setLanguage, t]);
 
-  return (
-    <LanguageContext.Provider value={value}>
-      {children}
-    </LanguageContext.Provider>
-  );
-};
-
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 };

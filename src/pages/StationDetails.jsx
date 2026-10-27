@@ -1,34 +1,22 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, Clock, Info, MapPin, Bell, Share2, ZoomIn, X } from 'lucide-react';
+import { useState } from 'react';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { ArrowLeft, Star, Clock, Info, MapPin, Bell, Share2, ZoomIn } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Card, CardContent } from '../components/ui/card';
-import { stations, arrivals } from '../lib/data';
-import { 
-  getNextBarraArrivals, 
-  getNextOceanArrivals, 
-  getNextJockeyClubArrivals, 
-  getNextStadiumArrivals,
-  getNextPaiKokArrivals,
-  getNextCotaiOesteArrivals,
-  getNextLotusArrivals,
-  getNextLotusHengqinArrivals,
-  getNextHospitalArrivals,
-  getNextHospitalSPVArrivals,
-  getNextEastAsianGamesArrivals,
-  getNextCotaiLesteArrivals,
-  getNextMustArrivals,
-  getNextAirportArrivals,
-  getNextTaipaFerryArrivals,
-  getNextSeacPaiVanArrivals,
-  getNextHengqinArrivals,
-  getStationServiceHours
-} from '../lib/timetable';
-import { cn, getName } from '../lib/utils';
-import { useLanguage } from '../contexts/LanguageContext';
-import { useImage } from '../contexts/ImageContext';
+import ReminderDialog from '../components/ReminderDialog';
+import { stations } from '../lib/data';
+import { getStationServiceHours } from '../lib/timetable';
+import { getStationArrivals } from '../lib/arrivals';
+import { getServiceDay } from '../lib/service';
+import { extraText } from '../lib/extraText';
+import { getName } from '../lib/utils';
+import { useLanguage } from '../contexts/language';
+import { useImage } from '../contexts/image';
+import { useReminders } from '../contexts/reminders';
+import { useFavorites } from '../hooks/useFavorites';
+import { useClock } from '../hooks/useClock';
 
 const StationDetails = () => {
   const { id } = useParams();
@@ -36,9 +24,19 @@ const StationDetails = () => {
   const { t, language } = useLanguage();
   const { showImage } = useImage();
   
-  const station = stations.find(s => s.id === id) || stations[0];
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [showReminder, setShowReminder] = useState(false);
+  const station = stations.find(s => s.id === id);
+  const { favorites, toggleFavorite } = useFavorites();
+  const { reminders, removeReminder } = useReminders();
+  const [showReminder, setShowReminder] = useState(null);
+  const now = useClock();
+  if (!station) return <Navigate to="/station" replace />;
+  const isFavorite = favorites.includes(id);
+  const displayTime = (value) => {
+    if (!value) return '--:--';
+    const [hour, minute] = value.split(':');
+    const time = String(Number(hour) % 24).padStart(2, '0') + ':' + minute;
+    return Number(hour) >= 24 ? time + ' ' + t('station_next_day') : time;
+  };
 
   const serviceHours = getStationServiceHours(id);
 
@@ -63,91 +61,7 @@ const StationDetails = () => {
     facilities.push({ zh: '親子洗手間', 'zh-CN': '亲子洗手间', en: 'Family Toilet', pt: 'Casa de banho para famílias' });
   }
 
-  // Live arrivals based on station id/timetable
-  const liveArrivals = (() => {
-    if (id === '1') {
-      const times = getNextBarraArrivals(3);
-      return [{ direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times }];
-    }
-    if (id === '2') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextOceanArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextOceanArrivals('Barra', 3) },
-      ];
-    }
-    if (id === '3') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextJockeyClubArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextJockeyClubArrivals('Barra', 3) },
-      ];
-    }
-    if (id === '4') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextStadiumArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextStadiumArrivals('Barra', 3) },
-      ];
-    }
-    if (id === '5') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextPaiKokArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextPaiKokArrivals('Barra', 3) },
-      ];
-    }
-    if (id === '6') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextCotaiOesteArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextCotaiOesteArrivals('Barra', 3) },
-      ];
-    }
-    if (id === '7') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (Taipa P1)', zh: '氹仔碼頭（氹仔線1號月台）', 'zh-CN': '氹仔码头（氹仔线1号月台）', pt: 'Terminal de Barcos da Taipa (Linha da Taipa P1)' }, times: getNextLotusArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (Taipa P2)', zh: '媽閣（氹仔線2號月台）', 'zh-CN': '妈阁（氹仔线2号月台）', pt: 'Barra (Linha da Taipa P2)' }, times: getNextLotusArrivals('Barra', 3) },
-        { direction: { en: 'Hengqin (Hengqin P3)', zh: '橫琴（橫琴線3號月台）', 'zh-CN': '横琴（横琴线3号月台）', pt: 'Hengqin (Linha Hengqin P3)' }, times: getNextLotusHengqinArrivals(3) },
-      ];
-    }
-    if (id === '8') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (Taipa P1)', zh: '氹仔碼頭（氹仔線1號月台）', 'zh-CN': '氹仔码头（氹仔线1号月台）', pt: 'Terminal de Barcos da Taipa (Linha da Taipa P1)' }, times: getNextHospitalArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (Taipa P2)', zh: '媽閣（氹仔線2號月台）', 'zh-CN': '妈阁（氹仔线2号月台）', pt: 'Barra (Linha da Taipa P2)' }, times: getNextHospitalArrivals('Barra', 3) },
-        { direction: { en: 'Seac Pai Van (SPV P3/4)', zh: '石排灣（石排灣線3/4號月台）', 'zh-CN': '石排湾（石排湾线3/4号月台）', pt: 'Seac Pai Van (Linha SPV P3/4)' }, times: getNextHospitalSPVArrivals(3) },
-      ];
-    }
-    if (id === '9') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextEastAsianGamesArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextEastAsianGamesArrivals('Barra', 3) },
-      ];
-    }
-    if (id === '10') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextCotaiLesteArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextCotaiLesteArrivals('Barra', 3) },
-      ];
-    }
-    if (id === '11') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextMustArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextMustArrivals('Barra', 3) },
-      ];
-    }
-    if (id === '12') {
-      return [
-        { direction: { en: 'Taipa Ferry Terminal (P1)', zh: '氹仔碼頭（1號月台）', 'zh-CN': '氹仔码头（1号月台）', pt: 'Terminal de Barcos da Taipa (Plataforma 1)' }, times: getNextAirportArrivals('Taipa', 3) },
-        { direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextAirportArrivals('Barra', 3) },
-      ];
-    }
-    if (id === '13') {
-      return [{ direction: { en: 'Barra (P2)', zh: '媽閣（2號月台）', 'zh-CN': '妈阁（2号月台）', pt: 'Barra (Plataforma 2)' }, times: getNextTaipaFerryArrivals(3) }];
-    }
-    if (id === '14') {
-      return [{ direction: { en: 'Union Hospital (P1/2)', zh: '協和醫院（1/2號月台）', 'zh-CN': '协和医院（1/2号月台）', pt: 'Hospital Universitário (Plataforma 1/2)' }, times: getNextSeacPaiVanArrivals(3) }];
-    }
-    if (id === '15') {
-      return [{ direction: { en: 'Lotus (P1)', zh: '蓮花（1號月台）', 'zh-CN': '莲花（1号月台）', pt: 'Lótus (Plataforma 1)' }, times: getNextHengqinArrivals(3) }];
-    }
-    return [];
-  })();
+  const liveArrivals = getStationArrivals(id, 3, now);
 
   return (
     <div className="bg-white min-h-screen pb-20 relative">
@@ -161,11 +75,17 @@ const StationDetails = () => {
           <ZoomIn className="text-white opacity-0 group-hover:opacity-100 w-10 h-10 drop-shadow-lg" />
         </div>
         <div className="absolute top-0 left-0 right-0 p-4 pt-10 flex justify-between items-start bg-gradient-to-b from-black/60 to-transparent z-10">
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 rounded-full" onClick={(e) => {
+          <Button aria-label={t('nav_station')} variant="ghost" size="icon" className="text-white hover:bg-white/20 rounded-full" onClick={(e) => {
             e.stopPropagation();
-            navigate(-1);
+            if (window.history.state?.idx > 0) navigate(-1);
+            else navigate('/station');
           }}>
             <ArrowLeft className="w-6 h-6" />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" className="text-white hover:bg-white/20 rounded-full"
+            aria-label={extraText(language, isFavorite ? 'favorite_remove' : 'favorite_add')} aria-pressed={isFavorite}
+            onClick={(event) => { event.stopPropagation(); toggleFavorite(id); }}>
+            <Star className="w-6 h-6" fill={isFavorite ? 'currentColor' : 'none'} />
           </Button>
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-10">
@@ -184,6 +104,7 @@ const StationDetails = () => {
         </div>
       </div>
 
+      {!getServiceDay(now).calendarKnown && <p role="status" className="m-4 p-3 rounded-xl bg-amber-50 text-amber-800 text-sm">{t('calendar_unknown')}</p>}
       {/* Tabs */}
       <div className="px-4 py-4">
         <Tabs defaultValue="arrivals">
@@ -194,8 +115,8 @@ const StationDetails = () => {
           </TabsList>
 
           <TabsContent value="arrivals" className="space-y-6">
-            {liveArrivals.length > 0 ? liveArrivals.map((entry, idx) => (
-              <div key={idx}>
+            {liveArrivals.length > 0 ? liveArrivals.map((entry) => (
+              <div key={entry.id}>
                 <h3 className="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wider flex items-center">
                   {t('home_to')} {getName(entry.direction, language)}
                   <div className="h-px bg-slate-200 flex-1 ml-3"></div>
@@ -242,15 +163,20 @@ const StationDetails = () => {
                           </>
                         )}
                       </div>
-                      {(entry.times && entry.times.length > 0) && (
+                      {(entry.times.length > 0 || reminders.some(item => item.stationId === id && item.directionId === entry.id)) && (
                         <Button 
                           variant="outline" 
                           size="sm" 
                           className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                          onClick={() => setShowReminder(true)}
+                          aria-pressed={reminders.some(item => item.stationId === id && item.directionId === entry.id)}
+                          onClick={() => {
+                            const active = reminders.find(item => item.stationId === id && item.directionId === entry.id);
+                            if (active) removeReminder(active.id);
+                            else setShowReminder(entry);
+                          }}
                         >
                           <Bell className="w-4 h-4 mr-1" />
-                          {t('station_notify')}
+                          {reminders.some(item => item.stationId === id && item.directionId === entry.id) ? extraText(language, 'reminder_cancel_action') : t('station_notify')}
                         </Button>
                       )}
                     </CardContent>
@@ -275,22 +201,22 @@ const StationDetails = () => {
                         <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
                           <p className="text-xs font-bold text-blue-600 mb-1">{t('station_mon_thu')}</p>
                           <div className="flex justify-between text-sm text-slate-600">
-                            <span>{t('station_first_train')}: {serviceHours.mon_thu?.first || '--:--'}</span>
-                            <span>{t('station_last_train')}: {serviceHours.mon_thu?.last || '--:--'}</span>
+                            <span>{t('station_first_train')}: {displayTime(serviceHours.mon_thu?.first)}</span>
+                            <span>{t('station_last_train')}: {displayTime(serviceHours.mon_thu?.last)}</span>
                           </div>
                         </div>
                         <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
                           <p className="text-xs font-bold text-blue-600 mb-1">{t('station_fri')}</p>
                           <div className="flex justify-between text-sm text-slate-600">
-                            <span>{t('station_first_train')}: {serviceHours.fri?.first || '--:--'}</span>
-                            <span>{t('station_last_train')}: {serviceHours.fri?.last || '--:--'}</span>
+                            <span>{t('station_first_train')}: {displayTime(serviceHours.fri?.first)}</span>
+                            <span>{t('station_last_train')}: {displayTime(serviceHours.fri?.last)}</span>
                           </div>
                         </div>
                         <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
                           <p className="text-xs font-bold text-blue-600 mb-1">{t('station_weekend')}</p>
                           <div className="flex justify-between text-sm text-slate-600">
-                            <span>{t('station_first_train')}: {serviceHours.weekend?.first || '--:--'}</span>
-                            <span>{t('station_last_train')}: {serviceHours.weekend?.last || '--:--'}</span>
+                            <span>{t('station_first_train')}: {displayTime(serviceHours.weekend?.first)}</span>
+                            <span>{t('station_last_train')}: {displayTime(serviceHours.weekend?.last)}</span>
                           </div>
                         </div>
                       </div>
@@ -728,49 +654,7 @@ const StationDetails = () => {
       </div>
 
 
-      {/* Reminder Bottom Sheet Mock */}
-      {showReminder && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-           <div className="bg-white w-full max-w-md rounded-t-2xl p-6 space-y-6 animate-in slide-in-from-bottom duration-300">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-bold">{t('reminder_title')}</h2>
-                <Button variant="ghost" size="sm" onClick={() => setShowReminder(false)}>{t('reminder_cancel')}</Button>
-              </div>
-              
-              <div className="space-y-4">
-                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">{t('reminder_type')}</label>
-                    <div className="flex gap-2">
-                       <Button variant="default" size="sm" className="flex-1">{t('reminder_before_arrival')}</Button>
-                       <Button variant="outline" size="sm" className="flex-1">{t('reminder_before_exit')}</Button>
-                    </div>
-                 </div>
-
-                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">{t('reminder_time_before')}</label>
-                    <div className="grid grid-cols-3 gap-2">
-                       <Button variant="outline" size="sm">5 {t('home_min')}</Button>
-                       <Button variant="default" size="sm">10 {t('home_min')}</Button>
-                       <Button variant="outline" size="sm">15 {t('home_min')}</Button>
-                    </div>
-                 </div>
-
-                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">{t('reminder_repeat')}</label>
-                    <select className="w-full h-10 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
-                       <option>{t('reminder_once')}</option>
-                       <option>{t('reminder_weekdays')}</option>
-                       <option>{t('reminder_weekends')}</option>
-                    </select>
-                 </div>
-              </div>
-
-              <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => setShowReminder(false)}>
-                 {t('reminder_save')}
-              </Button>
-           </div>
-        </div>
-      )}
+      {showReminder && <ReminderDialog stationId={id} direction={showReminder} onClose={() => setShowReminder(null)} />}
     </div>
   );
 };

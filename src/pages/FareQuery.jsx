@@ -1,25 +1,14 @@
 import React, { useState } from 'react';
 import { Info, Check } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../contexts/language';
+import { FARE_BANDS, priceForBand } from '../lib/routes';
 
 const FareQuery = () => {
   const { t, language } = useLanguage();
   const [fareType, setFareType] = useState('single');
 
-  const bands = [
-    { max: 3, single: 6, stored: 3, student: 1.5 },
-    { max: 6, single: 8, stored: 4, student: 2 },
-    { max: 9, single: 10, stored: 5, student: 2.5 },
-    { max: 12, single: 12, stored: 6, student: 3 },
-  ];
-  const priceFor = (band) => {
-    if (fareType === 'free') return 0;
-    if (fareType === 'single') return band.single;
-    if (fareType === 'stored') return band.stored;
-    if (fareType === 'student') return band.student;
-    return band.single;
-  };
+  const priceFor = (band) => priceForBand(band, fareType);
 
   const rules = [
     { 
@@ -90,7 +79,7 @@ const FareQuery = () => {
                  <span className="text-slate-400 text-sm">{t('fare_tiered_fares')}</span>
                </div>
                <div className="space-y-4">
-                  {bands.map((b, idx)=>(
+                  {FARE_BANDS.map((b, idx)=>(
                     <div className="flex justify-between text-sm" key={idx}>
                       <span className="text-slate-300">{t('fare_stops_count').replace('{max}', b.max)}</span>
                       <span className="font-semibold">{`MOP ${priceFor(b).toFixed((priceFor(b)%1)?1:0)}`}</span>
